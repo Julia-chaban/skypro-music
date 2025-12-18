@@ -1,0 +1,11 @@
+echo '.next
+node_modules
+*.log
+.DS_Store
+*.local
+.next
+out
+build
+coverage
+*.config.js
+*.config.ts' > .prettierignore
