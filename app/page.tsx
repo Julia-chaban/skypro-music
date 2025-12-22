@@ -1,9 +1,9 @@
 import './page.css';
 import './page.mobile.css';
-import Bar from '@/components/Bar/bar';
-import Navigation from '@/components/Navigation/navigation';
-import Centerblock from '@/components/Centerblock/centerblock';
-import Sidebar from '@/components/Sidebar/sidebar';
+import Bar from './components/Bar/bar';
+import Navigation from './components/Navigation/navigation';
+import Centerblock from './components/Centerblock/centerblock';
+import Sidebar from './components/Sidebar/sidebar';
 
 export default function Home() {
   return (
