@@ -1,0 +1,122 @@
+/* components/Navigation/navigation.module.css */
+.main__nav {
+    width: 244px;
+    background-color: #181818;
+    padding: 20px 0 20px 36px;
+}
+
+.nav__logo {
+    width: 113.33px;
+    height: 43px;
+    padding: 13px 0 13px 0;
+    background-color: transparent;
+    margin-bottom: 20px;
+}
+
+.nav__logo a {
+    display: block;
+}
+
+.nav__burger {
+    width: 20px;
+    height: 36px;
+    padding: 13px 0;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.burger__line {
+    display: inline-block;
+    width: 100%;
+    height: 1px;
+    background-color: #d3d3d3;
+}
+
+.nav__menu {
+    display: block;
+    visibility: visible;
+}
+
+.menu__list {
+    padding: 18px 0 10px 0;
+    list-style: none;
+    margin: 0;
+}
+
+.menu__item {
+    padding: 5px 0;
+    margin-bottom: 16px;
+}
+
+.menu__link {
+    color: #ffffff;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    transition: color 0.3s ease;
+}
+
+.menu__link:hover {
+    color: #d9b6ff;
+}
+
+.logo__image {
+    width: 113.33px;
+    height: 17px;
+    color: #181818;
+}
+
+/* Мобильные стили */
+@media (max-width: 768px) {
+    .main__nav {
+        width: 100%;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        border-bottom: 1px solid #4e4e4e;
+    }
+
+    .nav__burger {
+        display: flex;
+        order: 2;
+    }
+
+    .nav__logo {
+        margin-bottom: 0;
+        order: 1;
+    }
+
+    .nav__menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #181818;
+        padding: 20px;
+        display: none;
+        border-top: 1px solid #4e4e4e;
+    }
+
+    .nav__menu.active {
+        display: block;
+    }
+
+    .menu__list {
+        padding: 0;
+    }
+
+    .menu__item {
+        margin-bottom: 20px;
+    }
+
+    .menu__item:last-child {
+        margin-bottom: 0;
+    }
+}

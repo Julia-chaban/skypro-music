@@ -1,4 +1,11 @@
-.next
-node_modules
+
+echo '.next/
+node_modules/
 *.config.js
 *.config.ts
+*.config.mjs
+next-env.d.ts
+dist/
+build/
+out/
+coverage/' > .eslintignore
