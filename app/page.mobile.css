@@ -1,0 +1,45 @@
+/* app/page.mobile.css */
+@media (max-width: 768px) {
+    .wrapper {
+        width: 100%;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-color: #181818;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+        position: relative;
+        background-color: #181818;
+        height: auto;
+        min-height: 100vh;
+        padding-top: 60px;
+        /* Для фиксированной навигации */
+    }
+
+    .main {
+        flex-direction: column;
+        height: auto;
+        padding-bottom: 73px;
+    }
+
+    /* Стили для Centerblock на мобильных */
+    .centerblock {
+        width: 100%;
+        padding: 20px;
+        order: 2;
+    }
+
+    /* Стили для Sidebar на мобильных */
+    .main__sidebar {
+        max-width: 100%;
+        padding: 20px;
+        order: 1;
+    }
+
+    /* Стили для Bar на мобильных */
+    .bar {
+        z-index: 999;
+    }
+}
