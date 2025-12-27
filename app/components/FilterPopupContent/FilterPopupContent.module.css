@@ -1,0 +1,62 @@
+.filter__popupContent {
+    color: white;
+}
+
+.filter__popupTitle {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 24px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.filter__list {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    height: max-content;
+    max-height: 237px;
+    overflow-y: auto;
+    width: max-content;
+    max-width: 248px;
+    padding-right: 10px;
+}
+
+.filter__list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter__list::-webkit-scrollbar-track {
+    background-color: rgba(75, 73, 73, 1);
+    border-radius: 2px;
+}
+
+.filter__list::-webkit-scrollbar-thumb {
+    background-color: white;
+    border-radius: 2px;
+}
+
+.filter__item {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 24px;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.filter__item:hover {
+    color: #b672ff;
+    text-decoration: underline;
+}
+
+.filter__item.active {
+    color: #b672ff;
+    text-decoration: underline;
+}
