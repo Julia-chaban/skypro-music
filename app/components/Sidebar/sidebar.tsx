@@ -12,7 +12,7 @@ export default function Sidebar() {
         <p className={styles.sidebar__personalName}>Sergey.Ivanov</p>
         <div className={styles.sidebar__icon}>
           <svg>
-            <use xlinkHref="/icon/sprite.svg#logout"></use>
+            <use xlinkHref="/icon/logout.svg"></use>
           </svg>
         </div>
       </div>

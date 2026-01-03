@@ -1,4 +1,4 @@
-.centerblock__search {
+﻿.centerblock__search {
     width: 100%;
     border-bottom: 1px solid #4e4e4e;
     margin-bottom: 51px;
@@ -18,8 +18,9 @@
     width: 17px;
     height: 17px;
     margin-right: 5px;
-    stroke: #ffffff;
+    
     fill: transparent;
+    
 }
 
 .search__text {

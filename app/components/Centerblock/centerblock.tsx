@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Search from '../Search/Search';
@@ -26,7 +26,7 @@ export default function Centerblock() {
           </div>
           <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
             <svg className={styles.playlistTitle__svg}>
-              <use xlinkHref="/icon/sprite.svg#icon-watch"></use>
+              <use xlinkHref="/icon/watch.svg"></use>
             </svg>
           </div>
         </div>

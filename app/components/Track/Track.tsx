@@ -22,7 +22,7 @@ export default function Track({ track }: TrackProps) {
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
             <svg className={styles.track__titleSvg}>
-              <use xlinkHref="/icon/sprite.svg#icon-note"></use>
+              <use xlinkHref="/icon/note.svg"></use>
             </svg>
           </div>
           <div className={styles.track__titleText}>
@@ -43,7 +43,7 @@ export default function Track({ track }: TrackProps) {
         </div>
         <div className={styles.track__time}>
           <svg className={styles.track__timeSvg}>
-            <use xlinkHref="/icon/sprite.svg#icon-like"></use>
+            <use xlinkHref="/icon/like.svg"></use>
           </svg>
           <span className={styles.track__timeText}>
             {formatDuration(track.duration_in_seconds)}
