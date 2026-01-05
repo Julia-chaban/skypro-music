@@ -133,7 +133,6 @@ export const tracks: Track[] = [
   },
 ];
 
-// Функции для получения уникальных значений
 export const getUniqueArtists = (): string[] => {
   const artists = tracks.map((track) => track.author);
   return Array.from(new Set(artists))
@@ -153,9 +152,16 @@ export const getUniqueGenres = (): string[] => {
   return Array.from(new Set(allGenres)).sort();
 };
 
-// Функция для форматирования времени
 export const formatDuration = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+export const getYearFromDate = (dateString: string): string => {
+  try {
+    return new Date(dateString).getFullYear().toString();
+  } catch {
+    return '—';
+  }
 };

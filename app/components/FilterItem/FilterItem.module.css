@@ -35,12 +35,18 @@
     border-radius: 12px;
     padding: 34px;
     z-index: 1000;
-    min-width: 248px;
+    min-width: 280px;
+    /* Увеличено для длинных имён */
+    max-width: 320px;
+    /* Максимальная ширина */
     max-height: 305px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
+    /* Для мобильных устройств */
+    max-width: min(320px, 90vw);
 }
 
+/* Анимация появления попапа */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -53,7 +59,7 @@
     }
 }
 
-/* Класс для кнопок текстовых */
+/* Для кнопок текстовых */
 .btnText:hover {
     border-color: #d9b6ff;
     color: #d9b6ff;
@@ -64,4 +70,25 @@
     border-color: #ad61ff;
     color: #ad61ff;
     cursor: pointer;
+}
+
+/* Дополнительно: если попап выходит за правый край экрана */
+@media (max-width: 768px) {
+    .filter__popup {
+        left: auto;
+        right: 0;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .filter__button {
+        font-size: 14px;
+        padding: 4px 16px;
+    }
+
+    .filter__popup {
+        padding: 24px;
+        min-width: 260px;
+    }
 }

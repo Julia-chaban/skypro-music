@@ -24,6 +24,9 @@ export default function Centerblock() {
           <div className={`${styles.playlistTitle__col} ${styles.col03}`}>
             Альбом
           </div>
+          <div className={`${styles.playlistTitle__col} ${styles.col05}`}>
+            Год
+          </div>
           <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
             <svg className={styles.playlistTitle__svg}>
               <use xlinkHref="/icon/watch.svg"></use>

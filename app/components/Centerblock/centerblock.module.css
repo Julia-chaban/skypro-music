@@ -80,19 +80,23 @@
 }
 
 .col01 {
-    width: 447px;
+    width: 320px;
 }
 
 .col02 {
-    width: 321px;
+    width: 220px;
 }
 
 .col03 {
-    width: 245px;
+    width: 200px;
+}
+
+.col05 {
+    width: 80px;
 }
 
 .col04 {
-    width: 60px;
+    width: 80px;
     text-align: end;
 }
 
@@ -101,4 +105,104 @@
     height: 12px;
     fill: transparent;
     stroke: #696969;
+}
+
+/* ========== АДАПТИВНОСТЬ ДЛЯ ЗАГОЛОВКОВ ========== */
+
+@media (max-width: 1200px) {
+    .col01 {
+        width: 250px;
+    }
+
+    .col02 {
+        width: 180px;
+    }
+
+    .col03 {
+        width: 150px;
+    }
+
+    .col05 {
+        width: 60px;
+    }
+
+    .col04 {
+        width: 60px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .col01 {
+        width: 220px;
+    }
+
+    .col02 {
+        width: 150px;
+    }
+
+    .col03 {
+        width: 120px;
+    }
+
+    .col05 {
+        width: 50px;
+    }
+
+    .col04 {
+        width: 50px;
+    }
+}
+
+@media (max-width: 900px) {
+    .col01 {
+        width: 180px;
+    }
+
+    .col02 {
+        width: 120px;
+    }
+
+    .col03 {
+        width: 100px;
+    }
+
+    .col05 {
+        width: 40px;
+    }
+
+    .col04 {
+        width: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content__title {
+        display: none;
+        /* Скрываем заголовки на мобильных */
+    }
+}
+
+/* Адаптивность для самого centerblock */
+@media (max-width: 768px) {
+    .centerblock {
+        padding: 20px;
+    }
+
+    .centerblock__h2 {
+        font-size: 32px;
+        line-height: 40px;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 425px) {
+    .centerblock {
+        padding: 15px;
+    }
+
+    .centerblock__h2 {
+        font-size: 24px;
+        line-height: 32px;
+        margin-bottom: 15px;
+    }
 }
