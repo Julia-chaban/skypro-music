@@ -1,10 +1,23 @@
 ﻿'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './bar.module.css';
 
 export default function Bar() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <div className={styles.bar}>
       <div className={styles.bar__content}>
@@ -12,7 +25,7 @@ export default function Bar() {
         <div className={styles.bar__playerBlock}>
           <div className={styles.bar__player}>
             <div className={styles.player__controls}>
-              <div className={styles.player__btnPrev}>
+              <div className={`${styles.player__btnPrev} ${styles.btn}`}>
                 <svg className={styles.player__btnPrevSvg}>
                   <use xlinkHref="/icon/prev.svg"></use>
                 </svg>
@@ -22,21 +35,29 @@ export default function Bar() {
                   <use xlinkHref="/icon/play.svg"></use>
                 </svg>
               </div>
-              <div className={styles.player__btnNext}>
+              <div className={`${styles.player__btnNext} ${styles.btn}`}>
                 <svg className={styles.player__btnNextSvg}>
                   <use xlinkHref="/icon/next.svg"></use>
                 </svg>
               </div>
-              <div className={`${styles.player__btnRepeat} ${styles.btnIcon}`}>
-                <svg className={styles.player__btnRepeatSvg}>
-                  <use xlinkHref="/icon/repeat.svg"></use>
-                </svg>
-              </div>
-              <div className={`${styles.player__btnShuffle} ${styles.btnIcon}`}>
-                <svg className={styles.player__btnShuffleSvg}>
-                  <use xlinkHref="/icon/shuffle.svg"></use>
-                </svg>
-              </div>
+              {!isMobile && (
+                <>
+                  <div
+                    className={`${styles.player__btnRepeat} ${styles.btnIcon}`}
+                  >
+                    <svg className={styles.player__btnRepeatSvg}>
+                      <use xlinkHref="/icon/repeat.svg"></use>
+                    </svg>
+                  </div>
+                  <div
+                    className={`${styles.player__btnShuffle} ${styles.btnIcon}`}
+                  >
+                    <svg className={styles.player__btnShuffleSvg}>
+                      <use xlinkHref="/icon/shuffle.svg"></use>
+                    </svg>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className={styles.player__trackPlay}>
@@ -47,12 +68,20 @@ export default function Bar() {
                   </svg>
                 </div>
                 <div className={styles.trackPlay__author}>
-                  <Link className={styles.trackPlay__authorLink} href="">
+                  <Link
+                    className={styles.trackPlay__authorLink}
+                    href=""
+                    title="Ты та..."
+                  >
                     Ты та...
                   </Link>
                 </div>
                 <div className={styles.trackPlay__album}>
-                  <Link className={styles.trackPlay__albumLink} href="">
+                  <Link
+                    className={styles.trackPlay__albumLink}
+                    href=""
+                    title="аста"
+                  >
                     аста
                   </Link>
                 </div>
@@ -86,6 +115,10 @@ export default function Bar() {
                   className={`${styles.volume__progressLine} ${styles.btn}`}
                   type="range"
                   name="range"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  aria-label="Громкость"
                 />
               </div>
             </div>

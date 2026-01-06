@@ -1,10 +1,9 @@
 .filter__popupContent {
     color: white;
-    /* Устанавливаем ширину контейнера */
     min-width: 280px;
     max-width: 320px;
-    /* Оптимизация для мобильных */
     max-width: min(320px, 90vw);
+    box-sizing: border-box;
 }
 
 .filter__popupTitle {
@@ -14,7 +13,6 @@
     line-height: 24px;
     margin-bottom: 10px;
     color: white;
-    /* Предотвращаем слишком длинные заголовки */
     word-break: break-word;
 }
 
@@ -23,16 +21,14 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    /* Ещё уменьшили для лучшей компактности */
     max-height: 237px;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Скрываем горизонтальный скролл */
     padding-right: 10px;
     padding-left: 2px;
     width: 100%;
-    /* Плавный скролл */
     scroll-behavior: smooth;
+    box-sizing: border-box;
 }
 
 /* Стилизация скроллбара для Firefox */
@@ -65,7 +61,6 @@
     font-weight: 400;
     font-size: 16px;
     line-height: 1.4;
-    /* Используем относительное значение */
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -73,20 +68,18 @@
     word-break: break-word;
     overflow-wrap: break-word;
     padding: 4px 0;
-    /* Убираем стандартные стили для кнопок/ссылок */
     background: none;
     border: none;
     text-align: left;
     width: 100%;
-    /* Для длинных слов */
     hyphens: auto;
+    box-sizing: border-box;
 }
 
 .filter__item:hover {
     color: #b672ff;
     text-decoration: underline;
     transform: translateX(2px);
-    /* Лёгкая анимация при наведении */
 }
 
 .filter__item:active {
@@ -100,39 +93,82 @@
     font-weight: 500;
 }
 
-/* Для очень длинных имён - добавляем отступы */
+/* Для очень длинных имён */
 .filter__item--long {
     font-size: 15px;
     line-height: 1.3;
 }
 
-/* Адаптивность для мобильных устройств */
-@media (max-width: 480px) {
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+@media (max-width: 768px) {
     .filter__popupContent {
-        min-width: 260px;
-        padding: 24px;
+        min-width: auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        box-sizing: border-box;
     }
 
     .filter__popupTitle {
-        font-size: 18px;
-        line-height: 22px;
-    }
-
-    .filter__item {
-        font-size: 15px;
-        line-height: 1.3;
+        font-size: 18px !important;
+        line-height: 22px !important;
+        text-align: center;
+        margin-bottom: 15px !important;
+        padding: 0 10px;
+        box-sizing: border-box;
     }
 
     .filter__list {
-        gap: 12px;
-        max-height: 200px;
+        max-height: 50vh !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        gap: 12px !important;
+        padding: 0 10px !important;
+        box-sizing: border-box;
+    }
+
+    .filter__item {
+        font-size: 14px !important;
+        line-height: 18px !important;
+        padding: 8px 0 !important;
+        text-align: center;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    /* Убираем горизонтальный скролл на мобильных */
+    .filter__list::-webkit-scrollbar {
+        width: 2px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .filter__popupTitle {
+        font-size: 16px !important;
+        line-height: 20px !important;
+        margin-bottom: 12px !important;
+        padding: 0 8px;
+    }
+
+    .filter__item {
+        font-size: 13px !important;
+        line-height: 16px !important;
+        padding: 6px 0 !important;
+    }
+
+    .filter__list {
+        gap: 10px !important;
+        max-height: 55vh !important;
+        padding: 0 8px !important;
     }
 }
 
 /* Для планшетов */
-@media (max-width: 768px) and (min-width: 481px) {
+@media (min-width: 769px) and (max-width: 1024px) {
     .filter__popupContent {
         min-width: 270px;
+        max-width: 300px;
     }
 }
 

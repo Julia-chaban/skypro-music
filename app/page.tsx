@@ -1,18 +1,30 @@
+'use client';
+
 import './page.css';
 import './page.mobile.css';
 import Bar from './components/Bar/bar';
 import Navigation from './components/Navigation/navigation';
 import Centerblock from './components/Centerblock/centerblock';
 import Sidebar from './components/Sidebar/sidebar';
+import { useState } from 'react';
 
 export default function Home() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleBurgerClick = (isOpen: boolean) => {
+    setIsSidebarOpen(isOpen);
+  };
+
   return (
     <div className="wrapper">
       <div className="container">
         <main className="main">
-          <Navigation />
+          <Navigation
+            onBurgerClick={handleBurgerClick}
+            isSidebarOpen={isSidebarOpen}
+          />
           <Centerblock />
-          <Sidebar />
+          <Sidebar isOpen={isSidebarOpen} />
         </main>
         <Bar />
         <footer className="footer"></footer>

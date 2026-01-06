@@ -11,6 +11,9 @@
     align-items: center;
     margin-bottom: 51px;
     position: relative;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
 }
 
 .filter__title {
@@ -20,4 +23,42 @@
     line-height: 24px;
     margin-right: 15px;
     color: white;
+    white-space: nowrap;
+}
+
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+@media (max-width: 768px) {
+    .centerblock__filter {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        gap: 15px;
+        width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .filter__title {
+        margin-right: 0;
+        margin-bottom: 5px;
+        width: 100%;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .centerblock__filter {
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+
+    .filter__title {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 320px) {
+    .centerblock__filter {
+        padding: 0 8px;
+    }
 }

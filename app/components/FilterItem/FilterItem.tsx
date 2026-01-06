@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import styles from './FilterItem.module.css';
 
@@ -18,6 +18,34 @@ export default function FilterItem({
   onClick,
   popupContent,
 }: FilterItemProps) {
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  // Закрытие попапа при клике вне его области
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isActive &&
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
+        const button = document.querySelector(
+          `.${styles.filter__button}.${styles.active}`,
+        );
+        if (!button?.contains(event.target as Node)) {
+          onClick();
+        }
+      }
+    };
+
+    if (isActive) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isActive, onClick]);
+
   return (
     <div className={styles.filterItemContainer}>
       <button
@@ -25,11 +53,20 @@ export default function FilterItem({
           [styles.active]: isActive,
         })}
         onClick={onClick}
+        aria-expanded={isActive}
+        aria-haspopup="true"
       >
         {label}
       </button>
       {isActive && popupContent && (
-        <div className={styles.filter__popup}>{popupContent}</div>
+        <div
+          className={styles.filter__popup}
+          ref={popupRef}
+          role="dialog"
+          aria-label={`Фильтр по ${label}`}
+        >
+          {popupContent}
+        </div>
       )}
     </div>
   );

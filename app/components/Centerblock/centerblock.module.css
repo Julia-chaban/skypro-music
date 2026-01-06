@@ -107,8 +107,6 @@
     stroke: #696969;
 }
 
-/* ========== АДАПТИВНОСТЬ ДЛЯ ЗАГОЛОВКОВ ========== */
-
 @media (max-width: 1200px) {
     .col01 {
         width: 250px;
@@ -175,34 +173,75 @@
     }
 }
 
-@media (max-width: 768px) {
-    .content__title {
-        display: none;
-        /* Скрываем заголовки на мобильных */
-    }
-}
 
-/* Адаптивность для самого centerblock */
 @media (max-width: 768px) {
     .centerblock {
-        padding: 20px;
+        padding: 15px 0 !important;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
 
     .centerblock__h2 {
         font-size: 32px;
         line-height: 40px;
         margin-bottom: 20px;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .centerblock__content {
+        width: 100%;
+        overflow-x: hidden;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .content__title {
+        display: none;
+    }
+
+    .content__playlist {
+        max-height: none;
+        overflow-y: visible;
+        width: 100%;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .content__playlist::-webkit-scrollbar {
+        display: none;
     }
 }
 
+/* Для очень маленьких экранов */
 @media (max-width: 425px) {
     .centerblock {
-        padding: 15px;
+        padding: 10px 0 !important;
     }
 
     .centerblock__h2 {
         font-size: 24px;
         line-height: 32px;
         margin-bottom: 15px;
+        padding: 0 10px;
+    }
+
+    .centerblock__content {
+        padding: 0 10px;
+    }
+}
+
+/* Для экстремально маленьких экранов */
+@media (max-width: 320px) {
+    .centerblock__h2 {
+        font-size: 20px;
+        line-height: 28px;
+        padding: 0 8px;
+    }
+
+    .centerblock__content {
+        padding: 0 8px;
     }
 }

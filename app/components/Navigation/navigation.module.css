@@ -1,10 +1,54 @@
-/* components/Navigation/navigation.module.css */
+
 .main__nav {
     width: 244px;
     background-color: #181818;
     padding: 20px 0 20px 36px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
+/* Бургер-иконка (ВСЕГДА видна на десктопе) */
+.nav__burger {
+    width: 20px;
+    height: 36px;
+    padding: 13px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    position: relative;
+    z-index: 1001;
+    margin-bottom: 40px;
+}
+
+.burger__line {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #D3D3D3;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+/* Анимация бургера при активном состоянии (для десктопа) */
+.nav__burger.active .burger__line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+    background-color: #ffffff;
+}
+
+.nav__burger.active .burger__line:nth-child(2) {
+    opacity: 0;
+}
+
+.nav__burger.active .burger__line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+    background-color: #ffffff;
+}
+
+/* Логотип */
 .nav__logo {
     width: 113.33px;
     height: 43px;
@@ -17,26 +61,29 @@
     display: block;
 }
 
-.nav__burger {
-    width: 20px;
-    height: 36px;
-    padding: 13px 0;
-    display: none;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
+.logo__image {
+    width: 113.33px;
+    height: 17px;
+    color: #181818;
 }
 
-.burger__line {
-    display: inline-block;
-    width: 100%;
-    height: 1px;
-    background-color: #d3d3d3;
-}
-
+/* Десктопное меню (СКРЫТО по умолчанию) */
 .nav__menu {
+    display: none;
+    /* Меню скрыто */
+    visibility: hidden;
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+/* Десктопное меню при открытии */
+.nav__menu.active {
     display: block;
     visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .menu__list {
@@ -56,24 +103,21 @@
     font-size: 16px;
     line-height: 24px;
     transition: color 0.3s ease;
+    text-decoration: none;
+    display: block;
 }
 
 .menu__link:hover {
     color: #d9b6ff;
 }
 
-.logo__image {
-    width: 113.33px;
-    height: 17px;
-    color: #181818;
-}
 
-/* Мобильные стили */
 @media (max-width: 768px) {
     .main__nav {
         width: 100%;
         padding: 15px 20px;
         display: flex;
+        flex-direction: row;
         justify-content: space-between;
         align-items: center;
         position: fixed;
@@ -81,42 +125,205 @@
         left: 0;
         z-index: 1000;
         border-bottom: 1px solid #4e4e4e;
+        height: 60px;
+        box-sizing: border-box;
+        background-color: #181818;
     }
 
+    /* Бургер на мобильных (СПРАВА) */
     .nav__burger {
-        display: flex;
-        order: 2;
+        order: 3;
+        margin: 0 !important;
+        margin-left: auto !important;
+        width: 24px;
+        height: 18px;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
+    /* Линии бургера на мобильных */
+    .burger__line {
+        height: 2px;
+        background-color: #D3D3D3 !important;
+        display: block !important;
+        opacity: 1 !important;
+        transform: none !important;
+        width: 100% !important;
+    }
+
+    /* Анимация бургера при активном состоянии (для мобильных) */
+    .nav__burger.active .burger__line:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px) !important;
+        background-color: #ffffff !important;
+    }
+
+    .nav__burger.active .burger__line:nth-child(2) {
+        opacity: 0 !important;
+    }
+
+    .nav__burger.active .burger__line:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px) !important;
+        background-color: #ffffff !important;
+    }
+
+    /* Логотип на мобильных (ПО ЦЕНТРУ) */
     .nav__logo {
-        margin-bottom: 0;
-        order: 1;
+        order: 2;
+        margin: 0 auto !important;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        padding: 0 !important;
+        height: auto;
     }
 
+    /* Скрываем десктопное меню на мобильных */
     .nav__menu {
-        position: absolute;
-        top: 100%;
+        display: none !important;
+    }
+
+    /* Мобильное меню (открывается при клике на бургер) */
+    .nav__mobile_menu {
+        position: fixed;
+        top: 60px;
         left: 0;
         width: 100%;
         background-color: #181818;
         padding: 20px;
-        display: none;
+        z-index: 999;
         border-top: 1px solid #4e4e4e;
+        display: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
     }
+
+    .nav__mobile_menu.active {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* Стили для списка мобильного меню */
+    .mobile_menu__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mobile_menu__item {
+        padding: 0;
+        margin: 0;
+    }
+
+    .mobile_menu__link {
+        color: #ffffff;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 24px;
+        text-decoration: none;
+        display: block;
+        padding: 12px 0;
+        border-bottom: 1px solid #333;
+        text-align: center;
+        transition: color 0.3s ease;
+    }
+
+    .mobile_menu__link:hover {
+        color: #d9b6ff;
+    }
+
+    .mobile_menu__item:last-child .mobile_menu__link {
+        border-bottom: none;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .main__nav {
+        padding: 12px 15px;
+        height: 56px;
+    }
+
+    .nav__burger {
+        width: 22px;
+        height: 16px;
+    }
+
+    .burger__line {
+        height: 1.5px;
+    }
+
+    .nav__mobile_menu {
+        top: 56px;
+        padding: 15px;
+    }
+
+    .mobile_menu__list {
+        gap: 15px;
+    }
+
+    .mobile_menu__link {
+        font-size: 16px;
+        padding: 10px 0;
+    }
+}
+
+
+@media (min-width: 769px) {
+    .main__nav {
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        height: auto;
+        padding: 20px 0 20px 36px;
+        background-color: #181818;
+    }
+
+    .nav__burger {
+        margin-top: 0;
+    }
+
+
+    .nav__mobile_menu {
+        display: none !important;
+    }
+
 
     .nav__menu.active {
-        display: block;
+        display: block !important;
+        visibility: visible !important;
+    }
+}
+
+/* Эффект при наведении на бургер */
+.nav__burger:hover .burger__line {
+    background-color: #ffffff;
+}
+
+/* Анимация клика */
+@keyframes burgerClick {
+    0% {
+        transform: scale(1);
     }
 
-    .menu__list {
-        padding: 0;
+    50% {
+        transform: scale(0.9);
     }
 
-    .menu__item {
-        margin-bottom: 20px;
+    100% {
+        transform: scale(1);
     }
+}
 
-    .menu__item:last-child {
-        margin-bottom: 0;
-    }
+.nav__burger:active {
+    animation: burgerClick 0.2s ease;
 }

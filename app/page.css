@@ -1,17 +1,17 @@
-
 .wrapper {
     width: 100%;
     min-height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     background-color: #383838;
 }
 
 .container {
     max-width: 1920px;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0 auto;
     position: relative;
     background-color: #181818;
+    overflow-x: hidden;
 }
 
 .main {
@@ -19,7 +19,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    height: calc(100vh - 73px);
+    min-height: calc(100vh - 73px);
 }
 
 .footer {

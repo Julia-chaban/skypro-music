@@ -36,13 +36,10 @@
     padding: 34px;
     z-index: 1000;
     min-width: 280px;
-    /* Увеличено для длинных имён */
     max-width: 320px;
-    /* Максимальная ширина */
     max-height: 305px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
-    /* Для мобильных устройств */
     max-width: min(320px, 90vw);
 }
 
@@ -72,23 +69,81 @@
     cursor: pointer;
 }
 
-/* Дополнительно: если попап выходит за правый край экрана */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media (max-width: 768px) {
+    .filterItemContainer {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .filter__button {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        font-size: 14px;
+        padding: 8px 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .filter__button:not(:last-child) {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
     .filter__popup {
-        left: auto;
-        right: 0;
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 300px !important;
+        max-height: 70vh !important;
+        z-index: 1001 !important;
+        padding: 24px !important;
+        box-sizing: border-box;
+    }
+
+    /* Если попап выходит за правый край экрана */
+    .filter__popup {
+        left: 50% !important;
+        right: auto !important;
+    }
+}
+
+/* Для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .filter__popup {
+        max-width: 280px;
+        padding: 28px;
     }
 }
 
 /* Для очень маленьких экранов */
 @media (max-width: 480px) {
     .filter__button {
-        font-size: 14px;
-        padding: 4px 16px;
+        font-size: 13px;
+        padding: 6px 14px;
     }
 
     .filter__popup {
-        padding: 24px;
-        min-width: 260px;
+        width: 95vw !important;
+        max-width: 280px !important;
+        padding: 20px !important;
+    }
+}
+
+/* Для экстремально маленьких экранов */
+@media (max-width: 320px) {
+    .filter__button {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+
+    .filter__popup {
+        padding: 16px !important;
+        max-width: 260px !important;
     }
 }
