@@ -1,0 +1,247 @@
+.centerblock {
+    width: auto;
+    -webkit-box-flex: 3;
+    -ms-flex-positive: 3;
+    flex-grow: 3;
+    padding: 20px 40px 20px 111px;
+}
+
+.centerblock__h2 {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 64px;
+    line-height: 72px;
+    letter-spacing: -0.8px;
+    margin-bottom: 45px;
+    color: white;
+}
+
+.centerblock__content {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+
+.content__title {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.content__playlist {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 400px);
+}
+
+.content__playlist::-webkit-scrollbar {
+    width: 4px;
+}
+
+.content__playlist::-webkit-scrollbar-track {
+    background-color: rgba(75, 73, 73, 1);
+    border-radius: 2px;
+}
+
+.content__playlist::-webkit-scrollbar-thumb {
+    background-color: white;
+    border-radius: 2px;
+}
+
+.playlistTitle__col {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 2px;
+    color: #696969;
+    text-transform: uppercase;
+}
+
+.col01 {
+    width: 320px;
+}
+
+.col02 {
+    width: 220px;
+}
+
+.col03 {
+    width: 200px;
+}
+
+.col05 {
+    width: 80px;
+}
+
+.col04 {
+    width: 80px;
+    text-align: end;
+}
+
+.playlistTitle__svg {
+    width: 12px;
+    height: 12px;
+    fill: transparent;
+    stroke: #696969;
+}
+
+@media (max-width: 1200px) {
+    .col01 {
+        width: 250px;
+    }
+
+    .col02 {
+        width: 180px;
+    }
+
+    .col03 {
+        width: 150px;
+    }
+
+    .col05 {
+        width: 60px;
+    }
+
+    .col04 {
+        width: 60px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .col01 {
+        width: 220px;
+    }
+
+    .col02 {
+        width: 150px;
+    }
+
+    .col03 {
+        width: 120px;
+    }
+
+    .col05 {
+        width: 50px;
+    }
+
+    .col04 {
+        width: 50px;
+    }
+}
+
+@media (max-width: 900px) {
+    .col01 {
+        width: 180px;
+    }
+
+    .col02 {
+        width: 120px;
+    }
+
+    .col03 {
+        width: 100px;
+    }
+
+    .col05 {
+        width: 40px;
+    }
+
+    .col04 {
+        width: 40px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .centerblock {
+        padding: 15px 0 !important;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
+    .centerblock__h2 {
+        font-size: 32px;
+        line-height: 40px;
+        margin-bottom: 20px;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .centerblock__content {
+        width: 100%;
+        overflow-x: hidden;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .content__title {
+        display: none;
+    }
+
+    .content__playlist {
+        max-height: none;
+        overflow-y: visible;
+        width: 100%;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .content__playlist::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 425px) {
+    .centerblock {
+        padding: 10px 0 !important;
+    }
+
+    .centerblock__h2 {
+        font-size: 24px;
+        line-height: 32px;
+        margin-bottom: 15px;
+        padding: 0 10px;
+    }
+
+    .centerblock__content {
+        padding: 0 10px;
+    }
+}
+
+/* Для экстремально маленьких экранов */
+@media (max-width: 320px) {
+    .centerblock__h2 {
+        font-size: 20px;
+        line-height: 28px;
+        padding: 0 8px;
+    }
+
+    .centerblock__content {
+        padding: 0 8px;
+    }
+}

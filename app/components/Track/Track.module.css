@@ -1,0 +1,476 @@
+.playlist__item {
+    width: 100%;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.playlist__item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.playlist__track {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.track__title {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 320px;
+}
+
+.track__titleImage {
+    position: relative;
+    width: 51px;
+    height: 51px;
+    padding: 16px;
+    background: #313131;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    margin-right: 17px;
+    border-radius: 4px;
+}
+
+/* Фиолетовая точка для текущего трека */
+.track__titleImageDot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #ad61ff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+/* Анимация пульсации */
+@keyframes trackPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+.track__titleImageDotPulsing {
+    animation: trackPulse 1.5s infinite ease-in-out;
+}
+
+.track__titleSvg {
+    position: relative;
+    z-index: 2;
+    width: 18px;
+    height: 17px;
+    fill: transparent;
+    stroke: #4e4e4e;
+}
+
+.track__titleText {
+    flex: 1;
+    min-width: 0;
+}
+
+.track__titleLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track__titleLink:hover {
+    color: #d9b6ff;
+}
+
+.track__author {
+    width: 220px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+}
+
+.track__authorLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track__authorLink:hover {
+    color: #d9b6ff;
+}
+
+.track__album {
+    width: 200px;
+}
+
+.track__albumLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #696969;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.track__albumLink:hover {
+    color: #ffffff;
+}
+
+.track__year {
+    width: 80px;
+}
+
+.track__yearText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #696969;
+    text-align: left;
+    display: block;
+}
+
+.track__time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 80px;
+}
+
+.track__timeSvg {
+    width: 14px;
+    height: 12px;
+    margin-right: 17px;
+    fill: transparent;
+    stroke: #696969;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.track__timeSvg:hover {
+    stroke: #d9b6ff;
+}
+
+.track__timeSvg:active {
+    stroke: #ad61ff;
+    fill: #ad61ff;
+}
+
+/* Стиль для активного лайка */
+.track__timeSvgLiked {
+    stroke: #ad61ff !important;
+    fill: #ad61ff !important;
+}
+
+.track__timeText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: right;
+    color: #696969;
+    min-width: 40px;
+}
+
+.track__mobileInfo {
+    display: none;
+}
+
+/* ========== АДАПТИВНОСТЬ ========== */
+
+@media (max-width: 1200px) {
+    .track__title {
+        width: 250px;
+    }
+
+    .track__author {
+        width: 180px;
+    }
+
+    .track__album {
+        width: 150px;
+    }
+
+    .track__year {
+        width: 60px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .track__title {
+        width: 220px;
+    }
+
+    .track__author {
+        width: 150px;
+    }
+
+    .track__album {
+        width: 120px;
+    }
+
+    .track__year {
+        width: 50px;
+    }
+}
+
+@media (max-width: 900px) {
+    .track__title {
+        width: 180px;
+    }
+
+    .track__author {
+        width: 120px;
+    }
+
+    .track__album {
+        width: 100px;
+    }
+
+    .track__year {
+        width: 40px;
+    }
+
+    .track__time {
+        width: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .playlist__track {
+        flex-wrap: wrap;
+        position: relative;
+        padding: 12px 0;
+        gap: 8px;
+    }
+
+    .track__title {
+        width: calc(100% - 70px);
+        margin-bottom: 4px;
+    }
+
+    .track__author {
+        width: calc(50% - 40px);
+        order: 2;
+        justify-content: flex-start;
+        padding-left: 68px;
+    }
+
+    .track__album {
+        width: calc(50% - 40px);
+        order: 3;
+        text-align: right;
+    }
+
+    .track__year {
+        width: 40px;
+        order: 4;
+        text-align: center;
+    }
+
+    .track__time {
+        position: absolute;
+        top: 18px;
+        right: 0;
+        width: 60px;
+    }
+
+    .track__titleLink,
+    .track__authorLink,
+    .track__albumLink,
+    .track__yearText {
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    /* Адаптивность для точки на планшетах */
+    .track__titleImageDot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .playlist__track {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        gap: 8px;
+        padding: 12px 0;
+        position: relative;
+    }
+
+    .track__title {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .track__titleImage {
+        width: 40px;
+        height: 40px;
+        padding: 12px;
+        margin-right: 12px;
+    }
+
+    .track__author,
+    .track__album,
+    .track__year {
+        display: none;
+    }
+
+    .track__mobileInfo {
+        display: inline-block;
+        color: #696969;
+        font-size: 12px;
+        margin-left: 8px;
+        font-weight: 400;
+    }
+
+    .track__time {
+        position: absolute;
+        top: 12px;
+        right: 0;
+        width: auto;
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .track__timeSvg {
+        margin-right: 8px;
+    }
+
+    .track__titleLink {
+        font-size: 14px;
+        line-height: 18px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .track__mobileInfo {
+        margin-left: 0;
+        margin-top: 2px;
+    }
+
+    /* Адаптивность для точки на маленьких планшетах */
+    .track__titleImageDot {
+        width: 9px;
+        height: 9px;
+    }
+}
+
+@media (max-width: 425px) {
+    .track__titleLink {
+        font-size: 13px;
+        line-height: 16px;
+    }
+
+    .track__titleImage {
+        width: 36px;
+        height: 36px;
+        padding: 10px;
+        margin-right: 10px;
+    }
+
+    .track__mobileInfo {
+        font-size: 11px;
+    }
+
+    .track__timeSvg {
+        width: 12px;
+        height: 10px;
+        margin-right: 6px;
+    }
+
+    .track__timeText {
+        font-size: 12px;
+    }
+
+    /* Адаптивность для точки на мобильных */
+    .track__titleImageDot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 320px) {
+    .track__titleLink {
+        font-size: 12px;
+    }
+
+    .track__mobileInfo {
+        font-size: 10px;
+    }
+
+    .track__titleImage {
+        width: 32px;
+        height: 32px;
+        padding: 8px;
+        margin-right: 8px;
+    }
+
+    /* Адаптивность для точки на очень маленьких экранах */
+    .track__titleImageDot {
+        width: 6px;
+        height: 6px;
+    }
+}

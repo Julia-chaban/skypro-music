@@ -1,0 +1,242 @@
+.main__sidebar {
+    max-width: 418px;
+    padding: 20px 90px 20px 78px;
+    background-color: #181818;
+    height: 100vh;
+    box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    /* Десктоп: всегда видно */
+    transform: translateX(0);
+}
+
+.sidebar__personal {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+    padding: 12px 0 15px 0;
+}
+
+.sidebar__personalName {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+    margin-right: 16px;
+}
+
+.sidebar__icon {
+    width: 43px;
+    height: 43px;
+    background-color: #313131;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar__icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #ffffff;
+}
+
+.sidebar__block {
+    height: 100%;
+    padding: 240px 0 0 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+}
+
+.sidebar__list {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.sidebar__item {
+    width: 250px;
+    height: 150px;
+}
+
+.sidebar__item:not(:last-child) {
+    margin-bottom: 30px;
+}
+
+.sidebar__link {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.sidebar__link:hover {
+    transform: scale(1.02);
+}
+
+.sidebar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar__img:hover {
+    opacity: 0.9;
+}
+
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+@media (max-width: 768px) {
+    .main__sidebar {
+        width: 280px;
+        max-width: none;
+        padding: 20px;
+        transform: translateX(-100%);
+        top: 60px;
+        height: calc(100vh - 60px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .main__sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar__personalName {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .sidebar__block {
+        padding: 40px 0 0 0;
+    }
+
+    .sidebar__item {
+        width: 200px;
+        height: 120px;
+    }
+
+    .sidebar__item:not(:last-child) {
+        margin-bottom: 20px;
+    }
+
+    .sidebar__icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .sidebar__icon svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .main__sidebar {
+        width: 250px;
+        top: 56px;
+        height: calc(100vh - 56px);
+        padding: 15px;
+    }
+
+    .sidebar__personal {
+        padding: 8px 0 12px 0;
+    }
+
+    .sidebar__personalName {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .sidebar__item {
+        width: 180px;
+        height: 100px;
+    }
+
+    .sidebar__item:not(:last-child) {
+        margin-bottom: 15px;
+    }
+
+    .sidebar__block {
+        padding: 30px 0 0 0;
+    }
+}
+
+/* Планшетная версия */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .main__sidebar {
+        width: 320px;
+        padding: 20px 40px 20px 40px;
+    }
+
+    .sidebar__item {
+        width: 220px;
+        height: 130px;
+    }
+}
+
+/* Десктопная версия (всегда видна) */
+@media (min-width: 1025px) {
+    .main__sidebar {
+        position: relative;
+        transform: translateX(0) !important;
+    }
+}
+
+/* Стили для затемнения фона при открытом меню на мобильных */
+.sidebar__overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar__overlay {
+        display: block;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100vw;
+        height: calc(100vh - 60px);
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar__overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
