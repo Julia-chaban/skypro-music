@@ -1,45 +1,61 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useAppDispatch, useAppSelector } from '@/store/features/store';
+import {
+  setCurrentTrack,
+  setIsPlaying,
+  setPlaylist,
+  setCurrentTrackIndex,
+} from '@/store/features/trackSlice';
+import { Track } from '@/types/track';
 import { formatDuration, getYearFromDate } from '@/data/tracks';
-import styles from './Track.module.css';
+import styles from './TrackItem.module.css';
 
-interface TrackProps {
-  track: {
-    _id: number;
-    name: string;
-    author: string;
-    album: string;
-    release_date: string;
-    duration_in_seconds: number;
-  };
-  isPlaying?: boolean;
-  isCurrent?: boolean;
+interface TrackItemProps {
+  track: Track;
+  index: number;
+  tracks: Track[];
 }
 
-export default function Track({
-  track,
-  isPlaying = false,
-  isCurrent = false,
-}: TrackProps) {
+export default function TrackItem({ track, index, tracks }: TrackItemProps) {
   const year = getYearFromDate(track.release_date);
   const [isLiked, setIsLiked] = useState(false);
 
+  const dispatch = useAppDispatch();
+  const { currentTrack, isPlaying } = useAppSelector((state) => state.tracks);
+
+  const isCurrentTrack = currentTrack?._id === track._id;
+  const isCurrentlyPlaying = isCurrentTrack && isPlaying;
+
+  const handleTrackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    console.log('Кликнули трек:', track.name);
+    console.log('track_file:', track.track_file);
+    console.log('Тип track_file:', typeof track.track_file);
+
+    dispatch(setPlaylist(tracks));
+    dispatch(setCurrentTrackIndex(index));
+    dispatch(setCurrentTrack(track));
+    dispatch(setIsPlaying(true));
+  };
+
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsLiked(!isLiked);
   };
 
   return (
-    <div className={styles.playlist__item}>
+    <div className={styles.playlist__item} onClick={handleTrackClick}>
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
             {/* Фиолетовая точка для текущего трека */}
-            {isCurrent && (
+            {isCurrentTrack && (
               <div
-                className={`${styles.track__titleImageDot} ${isPlaying ? styles.track__titleImageDotPulsing : ''}`}
+                className={`${styles.track__titleImageDot} ${isCurrentlyPlaying ? styles.track__titleImageDotPulsing : ''}`}
               />
             )}
             <svg className={styles.track__titleSvg}>
@@ -47,23 +63,19 @@ export default function Track({
             </svg>
           </div>
           <div className={styles.track__titleText}>
-            <Link className={styles.track__titleLink} href="#">
+            <div className={styles.track__titleLink}>
               {track.name}
               <span className={styles.track__mobileInfo}>
                 {track.author} • {year}
               </span>
-            </Link>
+            </div>
           </div>
         </div>
         <div className={styles.track__author}>
-          <Link className={styles.track__authorLink} href="#">
-            {track.author}
-          </Link>
+          <div className={styles.track__authorLink}>{track.author}</div>
         </div>
         <div className={styles.track__album}>
-          <Link className={styles.track__albumLink} href="#">
-            {track.album}
-          </Link>
+          <div className={styles.track__albumLink}>{track.album}</div>
         </div>
         <div className={styles.track__year}>
           <span className={styles.track__yearText}>{year}</span>

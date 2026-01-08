@@ -1,5 +1,6 @@
 import { Track } from '@/types/track';
 
+// Оставляем моковые данные для обратной совместимости
 export const tracks: Track[] = [
   {
     _id: 8,
@@ -133,22 +134,45 @@ export const tracks: Track[] = [
   },
 ];
 
-export const getUniqueArtists = (): string[] => {
-  const artists = tracks.map((track) => track.author);
+// Функция загрузки из API
+export const fetchTracksFromAPI = async (): Promise<Track[]> => {
+  try {
+    const response = await fetch(
+      'https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/',
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tracks: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching tracks:', error);
+    // Возвращаем моковые данные в случае ошибки
+    return tracks;
+  }
+};
+
+// Для обратной совместимости оставляем функции без параметров
+export const getUniqueArtists = (tracksArray?: Track[]): string[] => {
+  const tracksToUse = tracksArray || tracks;
+  const artists = tracksToUse.map((track) => track.author);
   return Array.from(new Set(artists))
     .filter((artist) => artist !== '-')
     .sort();
 };
 
-export const getUniqueYears = (): string[] => {
-  const years = tracks.map((track) =>
+export const getUniqueYears = (tracksArray?: Track[]): string[] => {
+  const tracksToUse = tracksArray || tracks;
+  const years = tracksToUse.map((track) =>
     new Date(track.release_date).getFullYear().toString(),
   );
   return Array.from(new Set(years)).sort((a, b) => parseInt(b) - parseInt(a));
 };
 
-export const getUniqueGenres = (): string[] => {
-  const allGenres = tracks.flatMap((track) => track.genre);
+export const getUniqueGenres = (tracksArray?: Track[]): string[] => {
+  const tracksToUse = tracksArray || tracks;
+  const allGenres = tracksToUse.flatMap((track) => track.genre);
   return Array.from(new Set(allGenres)).sort();
 };
 
