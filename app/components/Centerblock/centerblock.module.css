@@ -6,6 +6,81 @@
     padding: 20px 40px 20px 111px;
 }
 
+/* Стили для поиска как в оригинале */
+.centerblock__search {
+    width: 100%;
+    border-bottom: 1px solid #4e4e4e;
+    margin-bottom: 51px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.search__svg {
+    width: 17px;
+    height: 17px;
+    margin-right: 5px;
+    stroke: #ffffff;
+    fill: transparent;
+}
+
+.search__text {
+    -webkit-box-flex: 100;
+    -ms-flex-positive: 100;
+    flex-grow: 100;
+    background-color: transparent;
+    border: none;
+    padding: 13px 10px 14px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+}
+
+.search__text::-webkit-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text:-ms-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text::-ms-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text::placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
 .centerblock__h2 {
     font-style: normal;
     font-weight: 400;
@@ -80,24 +155,24 @@
 }
 
 .col01 {
-    width: 320px;
+    width: 447px;
 }
 
 .col02 {
-    width: 220px;
+    width: 321px;
 }
 
 .col03 {
-    width: 200px;
+    width: 245px;
+}
+
+.col04 {
+    width: 60px;
+    text-align: end;
 }
 
 .col05 {
     width: 80px;
-}
-
-.col04 {
-    width: 80px;
-    text-align: end;
 }
 
 .playlistTitle__svg {
@@ -107,17 +182,109 @@
     stroke: #696969;
 }
 
+/* Стили для состояний загрузки и ошибок */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.loadingSpinner {
+    width: 40px;
+    height: 40px;
+    margin: 20px auto 0;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #b672ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #ff4d4d;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.retryButton {
+    background-color: #b672ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+    background-color: #9a5fdf;
+}
+
+.mockInfo {
+    margin-top: 10px;
+    color: #b672ff;
+    font-size: 14px;
+}
+
+.mockWarning {
+    background-color: rgba(182, 114, 255, 0.1);
+    border: 1px solid #b672ff;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    color: #b672ff;
+    font-size: 14px;
+    text-align: center;
+}
+
+.mockWarning:before {
+    content: "⚠️ ";
+}
+
 @media (max-width: 1200px) {
     .col01 {
-        width: 250px;
+        width: 320px;
     }
 
     .col02 {
-        width: 180px;
+        width: 220px;
     }
 
     .col03 {
-        width: 150px;
+        width: 200px;
     }
 
     .col05 {
@@ -129,7 +296,27 @@
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
+    .centerblock {
+        padding: 20px 20px 20px 90px;
+    }
+
+    .centerblock__search {
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .centerblock__h2 {
+        font-size: 32px;
+        line-height: 40px;
+        margin-bottom: 20px;
+        padding: 0 15px;
+    }
+
+    .centerblock__content {
+        padding: 0 15px;
+    }
+
     .col01 {
         width: 220px;
     }
@@ -149,99 +336,45 @@
     .col04 {
         width: 50px;
     }
-}
 
-@media (max-width: 900px) {
-    .col01 {
-        width: 180px;
-    }
-
-    .col02 {
-        width: 120px;
-    }
-
-    .col03 {
-        width: 100px;
-    }
-
-    .col05 {
-        width: 40px;
-    }
-
-    .col04 {
-        width: 40px;
+    .content__playlist {
+        max-height: none;
     }
 }
 
-
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .centerblock {
-        padding: 15px 0 !important;
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: hidden;
-        box-sizing: border-box;
+        padding: 15px;
+    }
+
+    .centerblock__search {
+        padding: 0 10px;
     }
 
     .centerblock__h2 {
-        font-size: 32px;
-        line-height: 40px;
-        margin-bottom: 20px;
-        padding: 0 15px;
-        box-sizing: border-box;
+        font-size: 24px;
+        line-height: 32px;
+        padding: 0 10px;
     }
 
     .centerblock__content {
-        width: 100%;
-        overflow-x: hidden;
-        padding: 0 15px;
-        box-sizing: border-box;
+        padding: 0 10px;
     }
 
     .content__title {
         display: none;
     }
 
-    .content__playlist {
-        max-height: none;
-        overflow-y: visible;
-        width: 100%;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+    .loading,
+    .error,
+    .empty {
+        height: 150px;
+        padding: 15px;
+        font-size: 14px;
     }
 
-    .content__playlist::-webkit-scrollbar {
-        display: none;
-    }
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 425px) {
-    .centerblock {
-        padding: 10px 0 !important;
-    }
-
-    .centerblock__h2 {
-        font-size: 24px;
-        line-height: 32px;
-        margin-bottom: 15px;
-        padding: 0 10px;
-    }
-
-    .centerblock__content {
-        padding: 0 10px;
-    }
-}
-
-/* Для экстремально маленьких экранов */
-@media (max-width: 320px) {
-    .centerblock__h2 {
-        font-size: 20px;
-        line-height: 28px;
-        padding: 0 8px;
-    }
-
-    .centerblock__content {
-        padding: 0 8px;
+    .retryButton {
+        padding: 8px 16px;
+        font-size: 13px;
     }
 }

@@ -1,0 +1,255 @@
+.playlist__item {
+    width: 100%;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.playlist__track {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.track__title {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 447px;
+}
+
+.track__titleImage {
+    position: relative;
+    width: 51px;
+    height: 51px;
+    padding: 16px;
+    background: #313131;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    margin-right: 17px;
+    border-radius: 4px;
+}
+
+/* Пульсирующая точка для текущего играющего трека */
+.track__titleImageDotPulsing {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: #b672ff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: trackPulse 1.5s infinite ease-in-out;
+    z-index: 1;
+}
+
+/* Анимация пульсации */
+@keyframes trackPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.7;
+    }
+}
+
+.track__titleSvg {
+    width: 20px;
+    /* Исправлено: ширина из note.svg */
+    height: 19px;
+    /* Исправлено: высота из note.svg */
+    fill: transparent;
+    stroke: #4e4e4e;
+    /* Цвет из note.svg */
+    position: relative;
+    z-index: 2;
+}
+
+.track__titleLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+    text-decoration: none;
+    display: block;
+}
+
+.track__titleSpan {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #4e4e4e;
+}
+
+.track__author {
+    width: 321px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+}
+
+.track__authorLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+    text-align: left;
+    text-decoration: none;
+}
+
+.track__album {
+    width: 245px;
+}
+
+.track__albumLink {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #696969;
+    text-decoration: none;
+    display: block;
+}
+
+.track__year {
+    width: 80px;
+}
+
+.track__yearText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #696969;
+    text-align: left;
+    display: block;
+}
+
+.track__time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 60px;
+}
+
+.track__timeSvg {
+    width: 16px;
+    /* Исправлено: ширина из like.svg */
+    height: 14px;
+    /* Исправлено: высота из like.svg */
+    margin-right: 17px;
+    fill: transparent;
+    stroke: #696969;
+    cursor: pointer;
+}
+
+.track__timeSvgLiked {
+    stroke: #ad61ff !important;
+    fill: #ad61ff !important;
+}
+
+.track__timeText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: right;
+    color: #696969;
+    min-width: 40px;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .track__title {
+        width: 320px;
+    }
+
+    .track__author {
+        width: 220px;
+    }
+
+    .track__album {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .track__title {
+        width: 250px;
+    }
+
+    .track__author {
+        width: 150px;
+    }
+
+    .track__album {
+        width: 120px;
+    }
+
+    .track__year {
+        width: 60px;
+    }
+
+    .track__time {
+        width: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .track__title {
+        width: 180px;
+    }
+
+    .track__author,
+    .track__album,
+    .track__year {
+        display: none;
+    }
+
+    .track__time {
+        width: 40px;
+    }
+
+    .track__timeSvg {
+        margin-right: 8px;
+    }
+}
