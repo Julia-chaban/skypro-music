@@ -31,14 +31,14 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
   const handleTrackClick = (e: React.MouseEvent) => {
     e.preventDefault();
 
-    console.log('Кликнули трек:', track.name);
-    console.log('track_file:', track.track_file);
-    console.log('Тип track_file:', typeof track.track_file);
-
-    dispatch(setPlaylist(tracks));
-    dispatch(setCurrentTrackIndex(index));
-    dispatch(setCurrentTrack(track));
-    dispatch(setIsPlaying(true));
+    if (isCurrentTrack) {
+      dispatch(setIsPlaying(!isPlaying));
+    } else {
+      dispatch(setPlaylist(tracks));
+      dispatch(setCurrentTrackIndex(index));
+      dispatch(setCurrentTrack(track));
+      dispatch(setIsPlaying(true));
+    }
   };
 
   const handleLikeClick = (e: React.MouseEvent) => {
@@ -52,34 +52,39 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
-            {/* Фиолетовая точка для текущего трека */}
-            {isCurrentTrack && (
-              <div
-                className={`${styles.track__titleImageDot} ${isCurrentlyPlaying ? styles.track__titleImageDotPulsing : ''}`}
-              />
-            )}
+            {/* Иконка ноты с исправленным путем */}
             <svg className={styles.track__titleSvg}>
               <use xlinkHref="/icon/note.svg"></use>
             </svg>
+
+            {/* Пульсирующая точка ТОЛЬКО для текущего играющего трека */}
+            {isCurrentTrack && isPlaying && (
+              <div className={styles.track__titleImageDotPulsing} />
+            )}
           </div>
           <div className={styles.track__titleText}>
-            <div className={styles.track__titleLink}>
+            <a className={styles.track__titleLink} href="">
               {track.name}
-              <span className={styles.track__mobileInfo}>
-                {track.author} • {year}
-              </span>
-            </div>
+            </a>
           </div>
         </div>
+
         <div className={styles.track__author}>
-          <div className={styles.track__authorLink}>{track.author}</div>
+          <a className={styles.track__authorLink} href="">
+            {track.author}
+          </a>
         </div>
+
         <div className={styles.track__album}>
-          <div className={styles.track__albumLink}>{track.album}</div>
+          <a className={styles.track__albumLink} href="">
+            {track.album}
+          </a>
         </div>
+
         <div className={styles.track__year}>
           <span className={styles.track__yearText}>{year}</span>
         </div>
+
         <div className={styles.track__time}>
           <svg
             className={`${styles.track__timeSvg} ${isLiked ? styles.track__timeSvgLiked : ''}`}

@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import React, { useEffect, useState } from 'react';
-import Search from '../Search/Search';
 import Filter from '../Filter/Filter';
 import Track from '../TrackItem/TrackItem';
 import { Track as TrackType } from '@/types/track';
@@ -37,11 +36,9 @@ export default function Centerblock() {
             response.statusText,
           );
 
-          // Если ответ не OK, проверяем статус
           if (!response.ok) {
             console.error('Response not OK. Status:', response.status);
 
-            // Если 404 или 500 - сразу переходим к моковым данным
             if (response.status === 404 || response.status === 500) {
               throw new Error(
                 `API endpoint not found or server error: ${response.status}`,
@@ -56,15 +53,12 @@ export default function Centerblock() {
             });
           }
 
-          // Пытаемся получить заголовок Content-Type
           const contentType = response.headers.get('content-type');
           console.log('Content-Type header:', contentType);
 
-          // Проверяем, является ли ответ JSON
           if (contentType && contentType.includes('application/json')) {
             return response.json();
           } else {
-            // Если не JSON, читаем как текст для отладки
             return response.text().then((text) => {
               console.log(
                 'Non-JSON response received. First 200 chars:',
@@ -72,7 +66,6 @@ export default function Centerblock() {
               );
               console.log('Full response length:', text.length);
 
-              // Пытаемся все равно распарсить как JSON на случай если заголовок неправильный
               try {
                 return JSON.parse(text);
               } catch (e) {
@@ -86,14 +79,12 @@ export default function Centerblock() {
           console.log('Data successfully parsed. Data type:', typeof data);
           console.log('Is array?', Array.isArray(data));
 
-          // Обрабатываем разные форматы ответа
           let tracksArray: TrackType[] = [];
 
           if (Array.isArray(data)) {
             tracksArray = data;
             console.log(`Received ${data.length} tracks directly from API`);
           } else if (data && typeof data === 'object') {
-            // Проверяем разные возможные структуры ответа API
             if (Array.isArray(data.tracks)) {
               tracksArray = data.tracks;
               console.log(
@@ -113,7 +104,6 @@ export default function Centerblock() {
                 `Received ${data.items.length} tracks from data.items`,
               );
             } else {
-              // Если структура непонятная, логируем её
               console.warn('Unexpected API response structure:', data);
               console.log('Object keys:', Object.keys(data));
             }
@@ -136,7 +126,6 @@ export default function Centerblock() {
           console.error('API fetch failed:', apiError);
           console.log('Falling back to mock data...');
 
-          // Используем моковые данные
           setTracks(mockTracks);
           setUseMockData(true);
           setError('Используются демо-данные. API временно недоступно.');
@@ -150,14 +139,12 @@ export default function Centerblock() {
     fetchTracks();
   }, []);
 
-  // Функция для перезагрузки треков
   const handleRetry = () => {
     setLoading(true);
     setError(null);
     setTracks([]);
 
     const fetchTracks = () => {
-      // Попробуем альтернативный подход: fetch с обработкой как blob
       fetch(
         'https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/',
         {
@@ -172,7 +159,6 @@ export default function Centerblock() {
           return response.blob();
         })
         .then((blob) => {
-          // Преобразуем blob в текст
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
@@ -219,13 +205,47 @@ export default function Centerblock() {
   if (loading) {
     return (
       <div className={styles.centerblock}>
-        <Search />
+        {/* Поиск с исправленной иконкой */}
+        <div className={styles.centerblock__search}>
+          <svg className={styles.search__svg}>
+            <use xlinkHref="/icon/search.svg"></use>
+          </svg>
+          <input
+            className={styles.search__text}
+            type="search"
+            placeholder="Поиск"
+            name="search"
+          />
+        </div>
+
         <h2 className={styles.centerblock__h2}>Треки</h2>
+
         <Filter tracks={tracks} />
         <div className={styles.centerblock__content}>
-          <div className={styles.loading}>
-            <div>Загрузка треков...</div>
-            <div className={styles.loadingSpinner}></div>
+          <div className={styles.content__title}>
+            <div className={`${styles.playlistTitle__col} ${styles.col01}`}>
+              ТРЕК
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col02}`}>
+              ИСПОЛНИТЕЛЬ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col03}`}>
+              АЛЬБОМ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col05}`}>
+              ГОД
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
+              <svg className={styles.playlistTitle__svg}>
+                <use xlinkHref="/icon/watch.svg"></use>
+              </svg>
+            </div>
+          </div>
+          <div className={styles.content__playlist}>
+            <div className={styles.loading}>
+              <div>Загрузка треков...</div>
+              <div className={styles.loadingSpinner}></div>
+            </div>
           </div>
         </div>
       </div>
@@ -235,20 +255,52 @@ export default function Centerblock() {
   if (error) {
     return (
       <div className={styles.centerblock}>
-        <Search />
+        <div className={styles.centerblock__search}>
+          <svg className={styles.search__svg}>
+            <use xlinkHref="/icon/search.svg"></use>
+          </svg>
+          <input
+            className={styles.search__text}
+            type="search"
+            placeholder="Поиск"
+            name="search"
+          />
+        </div>
+
         <h2 className={styles.centerblock__h2}>Треки</h2>
         <Filter tracks={tracks} />
         <div className={styles.centerblock__content}>
-          <div className={styles.error}>
-            <div>{error}</div>
-            <button onClick={handleRetry} className={styles.retryButton}>
-              Попробовать снова
-            </button>
-            {useMockData && (
-              <div className={styles.mockInfo}>
-                Сейчас используются демонстрационные треки
-              </div>
-            )}
+          <div className={styles.content__title}>
+            <div className={`${styles.playlistTitle__col} ${styles.col01}`}>
+              ТРЕК
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col02}`}>
+              ИСПОЛНИТЕЛЬ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col03}`}>
+              АЛЬБОМ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col05}`}>
+              ГОД
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
+              <svg className={styles.playlistTitle__svg}>
+                <use xlinkHref="/icon/watch.svg"></use>
+              </svg>
+            </div>
+          </div>
+          <div className={styles.content__playlist}>
+            <div className={styles.error}>
+              <div>{error}</div>
+              <button onClick={handleRetry} className={styles.retryButton}>
+                Попробовать снова
+              </button>
+              {useMockData && (
+                <div className={styles.mockInfo}>
+                  Сейчас используются демонстрационные треки
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -258,15 +310,49 @@ export default function Centerblock() {
   if (!tracks || !Array.isArray(tracks) || tracks.length === 0) {
     return (
       <div className={styles.centerblock}>
-        <Search />
-        <h2 className={styles.centerblock__h2}>Треки</h2>
+        <div className={styles.centerblock__search}>
+          <svg className={styles.search__svg}>
+            <use xlinkHref="/icon/search.svg"></use>
+          </svg>
+          <input
+            className={styles.search__text}
+            type="search"
+            placeholder="Поиск"
+            name="search"
+          />
+        </div>
+
+        <h2 className={styles.centerblock__h2}>
+          Треки {useMockData && '(демо)'}
+        </h2>
         <Filter tracks={tracks} />
         <div className={styles.centerblock__content}>
-          <div className={styles.error}>
-            Треки не найдены
-            <button onClick={handleRetry} className={styles.retryButton}>
-              Обновить
-            </button>
+          <div className={styles.content__title}>
+            <div className={`${styles.playlistTitle__col} ${styles.col01}`}>
+              ТРЕК
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col02}`}>
+              ИСПОЛНИТЕЛЬ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col03}`}>
+              АЛЬБОМ
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col05}`}>
+              ГОД
+            </div>
+            <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
+              <svg className={styles.playlistTitle__svg}>
+                <use xlinkHref="/icon/watch.svg"></use>
+              </svg>
+            </div>
+          </div>
+          <div className={styles.content__playlist}>
+            <div className={styles.error}>
+              Треки не найдены
+              <button onClick={handleRetry} className={styles.retryButton}>
+                Обновить
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -275,7 +361,19 @@ export default function Centerblock() {
 
   return (
     <div className={styles.centerblock}>
-      <Search />
+      {/* Поиск с исправленной иконкой */}
+      <div className={styles.centerblock__search}>
+        <svg className={styles.search__svg}>
+          <use xlinkHref="/icon/search.svg"></use>
+        </svg>
+        <input
+          className={styles.search__text}
+          type="search"
+          placeholder="Поиск"
+          name="search"
+        />
+      </div>
+
       <h2 className={styles.centerblock__h2}>
         Треки {useMockData && '(демо)'}
       </h2>
@@ -288,16 +386,16 @@ export default function Centerblock() {
         )}
         <div className={styles.content__title}>
           <div className={`${styles.playlistTitle__col} ${styles.col01}`}>
-            Трек
+            ТРЕК
           </div>
           <div className={`${styles.playlistTitle__col} ${styles.col02}`}>
-            Исполнитель
+            ИСПОЛНИТЕЛЬ
           </div>
           <div className={`${styles.playlistTitle__col} ${styles.col03}`}>
-            Альбом
+            АЛЬБОМ
           </div>
           <div className={`${styles.playlistTitle__col} ${styles.col05}`}>
-            Год
+            ГОД
           </div>
           <div className={`${styles.playlistTitle__col} ${styles.col04}`}>
             <svg className={styles.playlistTitle__svg}>

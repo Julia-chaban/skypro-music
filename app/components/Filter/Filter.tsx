@@ -20,7 +20,6 @@ interface FilterProps {
 export default function Filter({ tracks = defaultTracks }: FilterProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
 
-  // Если tracks не передан или пустой, используем defaultTracks
   const tracksToUse =
     tracks && Array.isArray(tracks) && tracks.length > 0
       ? tracks

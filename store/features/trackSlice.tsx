@@ -12,6 +12,7 @@ type initialStateType = {
   currentTrackIndex: number;
   isLooping: boolean;
   isShuffling: boolean;
+  shuffledPlaylist: Track[];
 };
 
 const initialState: initialStateType = {
@@ -24,6 +25,7 @@ const initialState: initialStateType = {
   currentTrackIndex: -1,
   isLooping: false,
   isShuffling: false,
+  shuffledPlaylist: [],
 };
 
 const trackSlice = createSlice({
@@ -31,93 +33,212 @@ const trackSlice = createSlice({
   initialState,
   reducers: {
     setCurrentTrack: (state, action: PayloadAction<Track>) => {
-      state.currentTrack = action.payload;
+      const track = action.payload;
+      state.currentTrack = track;
       state.isPlaying = true;
       state.currentTime = 0;
 
       // Находим индекс трека в плейлисте
-      const index = state.playlist.findIndex(
-        (track) => track._id === action.payload._id,
-      );
+      const index = state.playlist.findIndex((t) => t._id === track._id);
+
       if (index !== -1) {
         state.currentTrackIndex = index;
+      } else {
+        // Если трека нет в плейлисте, добавляем его как единственный
+        state.playlist = [track];
+        state.shuffledPlaylist = [track];
+        state.currentTrackIndex = 0;
       }
     },
+
+    setPlaylist: (state, action: PayloadAction<Track[]>) => {
+      const playlist = action.payload;
+      state.playlist = playlist;
+      state.shuffledPlaylist = [...playlist];
+
+      // Если есть текущий трек, обновляем его индекс
+      if (state.currentTrack) {
+        const index = playlist.findIndex(
+          (track) => track._id === state.currentTrack?._id,
+        );
+        if (index !== -1) {
+          state.currentTrackIndex = index;
+        } else {
+          // Если текущего трека нет в новом плейлисте, сбрасываем
+          state.currentTrack = null;
+          state.currentTrackIndex = -1;
+          state.isPlaying = false;
+        }
+      }
+    },
+
+    // Вспомогательная функция для перемешивания
+    _shufflePlaylist: (state) => {
+      if (state.playlist.length > 0) {
+        const shuffled = [...state.playlist];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        state.shuffledPlaylist = shuffled;
+
+        // Находим новый индекс текущего трека в перемешанном плейлисте
+        if (state.currentTrack) {
+          const index = shuffled.findIndex(
+            (track) => track._id === state.currentTrack?._id,
+          );
+          state.currentTrackIndex = index;
+        }
+      }
+    },
+
     setIsPlaying: (state, action: PayloadAction<boolean>) => {
       state.isPlaying = action.payload;
     },
+
     setVolume: (state, action: PayloadAction<number>) => {
-      state.volume = action.payload;
+      state.volume = Math.max(0, Math.min(1, action.payload));
     },
+
     setCurrentTime: (state, action: PayloadAction<number>) => {
       state.currentTime = action.payload;
     },
+
     setDuration: (state, action: PayloadAction<number>) => {
       state.duration = action.payload;
     },
-    setPlaylist: (state, action: PayloadAction<Track[]>) => {
-      state.playlist = action.payload;
-    },
+
     setCurrentTrackIndex: (state, action: PayloadAction<number>) => {
-      state.currentTrackIndex = action.payload;
-      if (action.payload >= 0 && action.payload < state.playlist.length) {
-        state.currentTrack = state.playlist[action.payload];
+      const index = action.payload;
+      if (index >= 0 && index < state.playlist.length) {
+        state.currentTrackIndex = index;
+        state.currentTrack = state.isShuffling
+          ? state.shuffledPlaylist[index]
+          : state.playlist[index];
         state.isPlaying = true;
         state.currentTime = 0;
       }
     },
+
     togglePlaying: (state) => {
-      state.isPlaying = !state.isPlaying;
+      if (state.currentTrack) {
+        state.isPlaying = !state.isPlaying;
+      }
     },
+
     toggleLooping: (state) => {
       state.isLooping = !state.isLooping;
     },
+
     toggleShuffling: (state) => {
+      const wasShuffling = state.isShuffling;
       state.isShuffling = !state.isShuffling;
+
+      if (!wasShuffling && state.isShuffling) {
+        // Включаем перемешивание - используем внутреннюю логику
+        if (state.playlist.length > 0) {
+          const shuffled = [...state.playlist];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          state.shuffledPlaylist = shuffled;
+
+          if (state.currentTrack) {
+            const index = shuffled.findIndex(
+              (track) => track._id === state.currentTrack?._id,
+            );
+            if (index !== -1) {
+              state.currentTrackIndex = index;
+            }
+          }
+        }
+      } else if (wasShuffling && !state.isShuffling) {
+        // Выключаем перемешивание, возвращаем оригинальный плейлист
+        if (state.currentTrack) {
+          const index = state.playlist.findIndex(
+            (track) => track._id === state.currentTrack?._id,
+          );
+          if (index !== -1) {
+            state.currentTrackIndex = index;
+          }
+        }
+      }
     },
+
     nextTrack: (state) => {
-      if (state.playlist.length > 0) {
-        if (state.isShuffling) {
-          const randomIndex = Math.floor(Math.random() * state.playlist.length);
-          state.currentTrackIndex = randomIndex;
-        } else {
-          state.currentTrackIndex =
-            (state.currentTrackIndex + 1) % state.playlist.length;
+      if (state.playlist.length === 0) return;
+
+      const playlist = state.isShuffling
+        ? state.shuffledPlaylist
+        : state.playlist;
+
+      if (playlist.length > 0) {
+        let nextIndex = state.currentTrackIndex + 1;
+
+        if (nextIndex >= playlist.length) {
+          nextIndex = state.isLooping ? 0 : state.currentTrackIndex;
+          if (!state.isLooping) {
+            state.isPlaying = false; // Останавливаем если не зациклено
+            return;
+          }
         }
-        state.currentTrack = state.playlist[state.currentTrackIndex];
+
+        state.currentTrackIndex = nextIndex;
+        state.currentTrack = playlist[nextIndex];
         state.currentTime = 0;
         state.isPlaying = true;
       }
     },
+
     prevTrack: (state) => {
-      if (state.playlist.length > 0) {
-        if (state.isShuffling) {
-          const randomIndex = Math.floor(Math.random() * state.playlist.length);
-          state.currentTrackIndex = randomIndex;
-        } else {
-          state.currentTrackIndex =
-            state.currentTrackIndex > 0
-              ? state.currentTrackIndex - 1
-              : state.playlist.length - 1;
+      if (state.playlist.length === 0) return;
+
+      const playlist = state.isShuffling
+        ? state.shuffledPlaylist
+        : state.playlist;
+
+      if (playlist.length > 0) {
+        let prevIndex = state.currentTrackIndex - 1;
+
+        if (prevIndex < 0) {
+          prevIndex = state.isLooping
+            ? playlist.length - 1
+            : state.currentTrackIndex;
+          if (!state.isLooping) {
+            state.isPlaying = false; // Останавливаем если не зациклено
+            return;
+          }
         }
-        state.currentTrack = state.playlist[state.currentTrackIndex];
+
+        state.currentTrackIndex = prevIndex;
+        state.currentTrack = playlist[prevIndex];
         state.currentTime = 0;
         state.isPlaying = true;
       }
     },
+
     setProgress: (state, action: PayloadAction<number>) => {
-      state.currentTime = action.payload;
+      state.currentTime = Math.max(0, Math.min(state.duration, action.payload));
+    },
+
+    clearTrack: (state) => {
+      state.currentTrack = null;
+      state.isPlaying = false;
+      state.currentTime = 0;
+      state.duration = 0;
+      state.currentTrackIndex = -1;
     },
   },
 });
 
 export const {
   setCurrentTrack,
+  setPlaylist,
   setIsPlaying,
   setVolume,
   setCurrentTime,
   setDuration,
-  setPlaylist,
   setCurrentTrackIndex,
   togglePlaying,
   toggleLooping,
@@ -125,6 +246,7 @@ export const {
   nextTrack,
   prevTrack,
   setProgress,
+  clearTrack,
 } = trackSlice.actions;
 
 export const trackSliceReducer = trackSlice.reducer;

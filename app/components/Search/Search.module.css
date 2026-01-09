@@ -18,9 +18,9 @@
     width: 17px;
     height: 17px;
     margin-right: 5px;
-    
+    stroke: #ffffff;
+    /* ДОБАВИТЬ: белая обводка */
     fill: transparent;
-    
 }
 
 .search__text {

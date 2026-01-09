@@ -26,6 +26,81 @@
     white-space: nowrap;
 }
 
+/* Контейнер для кнопки фильтра */
+.filterItemContainer {
+    position: relative;
+    display: inline-block;
+}
+
+/* Стили кнопок фильтра как в оригинале */
+.filter__button {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    border: 1px solid #ffffff;
+    border-radius: 60px;
+    padding: 6px 20px;
+    color: white;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.filter__button:not(:last-child) {
+    margin-right: 10px;
+}
+
+/* Активное состояние кнопки */
+.filter__button.active {
+    border-color: #ad61ff;
+    color: #ad61ff;
+}
+
+/* Попап */
+.filter__popup {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: #313131;
+    border-radius: 12px;
+    padding: 34px;
+    z-index: 1000;
+    min-width: 280px;
+    max-width: 320px;
+    max-height: 305px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+    max-width: min(320px, 90vw);
+}
+
+/* Анимация появления попапа */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили hover и active как в оригинале */
+.filter__button:hover {
+    border-color: #d9b6ff;
+    color: #d9b6ff;
+    cursor: pointer;
+}
+
+.filter__button:active {
+    border-color: #ad61ff;
+    color: #ad61ff;
+    cursor: pointer;
+}
+
 /* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media (max-width: 768px) {
     .centerblock__filter {
@@ -44,8 +119,44 @@
         width: 100%;
         font-size: 18px;
     }
+
+    .filterItemContainer {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .filter__button {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        font-size: 14px;
+        padding: 8px 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .filter__button:not(:last-child) {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .filter__popup {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 300px !important;
+        max-height: 70vh !important;
+        z-index: 1001 !important;
+        padding: 24px !important;
+        box-sizing: border-box;
+    }
 }
 
+/* Для очень маленьких экранов */
 @media (max-width: 480px) {
     .centerblock__filter {
         margin-bottom: 20px;
@@ -55,10 +166,15 @@
     .filter__title {
         font-size: 16px;
     }
-}
 
-@media (max-width: 320px) {
-    .centerblock__filter {
-        padding: 0 8px;
+    .filter__button {
+        font-size: 13px;
+        padding: 6px 14px;
+    }
+
+    .filter__popup {
+        width: 95vw !important;
+        max-width: 280px !important;
+        padding: 20px !important;
     }
 }

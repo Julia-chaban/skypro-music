@@ -34,7 +34,6 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
 
   const handleOverlayClick = () => {
     setIsVisible(false);
-    // Можно также вызвать колбэк для закрытия, если он есть
   };
 
   return (
@@ -54,7 +53,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
         <div className={styles.sidebar__personal}>
           <p className={styles.sidebar__personalName}>Sergey.Ivanov</p>
           <div className={styles.sidebar__icon}>
-            <svg>
+            <svg width="20" height="20" viewBox="0 0 24 24">
               <use xlinkHref="/icon/logout.svg"></use>
             </svg>
           </div>
@@ -66,7 +65,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                 <Image
                   className={styles.sidebar__img}
                   src="/img/playlist01.png"
-                  alt="day's playlist"
+                  alt="Плейлист дня"
                   width={250}
                   height={150}
                   priority
@@ -78,7 +77,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                 <Image
                   className={styles.sidebar__img}
                   src="/img/playlist02.png"
-                  alt="day's playlist"
+                  alt="Плейлист дня"
                   width={250}
                   height={150}
                 />
@@ -89,7 +88,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                 <Image
                   className={styles.sidebar__img}
                   src="/img/playlist03.png"
-                  alt="day's playlist"
+                  alt="Плейлист дня"
                   width={250}
                   height={150}
                 />
