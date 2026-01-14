@@ -202,6 +202,14 @@ export default function Bar() {
     if (isLiked) setIsLiked(false);
   }, [isDisliked, isLiked]);
 
+  // Форматирование времени
+  const formatTime = useCallback((time: number) => {
+    if (!time || isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }, []);
+
   // Мемоизация JSX для предотвращения лишних ререндеров
   const barContent = useMemo(
     () => (
@@ -236,7 +244,10 @@ export default function Bar() {
                     className={`${styles.player__btnPrev} ${styles.btn}`}
                     onClick={currentTrack ? handlePrevClick : undefined}
                   >
-                    <svg className={styles.player__btnPrevSvg}>
+                    <svg
+                      className={styles.player__btnPrevSvg}
+                      style={{ fill: '#ffffff', stroke: '#ffffff' }}
+                    >
                       <use xlinkHref="/icon/prev.svg"></use>
                     </svg>
                   </div>
@@ -244,7 +255,10 @@ export default function Bar() {
                     className={`${styles.player__btnPlay} ${styles.btn}`}
                     onClick={currentTrack ? handlePlayClick : undefined}
                   >
-                    <svg className={styles.player__btnPlaySvg}>
+                    <svg
+                      className={styles.player__btnPlaySvg}
+                      style={{ fill: '#ffffff' }}
+                    >
                       {currentTrack && isPlaying ? (
                         <use xlinkHref="/icon/pause.svg"></use>
                       ) : (
@@ -256,7 +270,10 @@ export default function Bar() {
                     className={`${styles.player__btnNext} ${styles.btn}`}
                     onClick={currentTrack ? handleNextClick : undefined}
                   >
-                    <svg className={styles.player__btnNextSvg}>
+                    <svg
+                      className={styles.player__btnNextSvg}
+                      style={{ fill: '#ffffff', stroke: '#ffffff' }}
+                    >
                       <use xlinkHref="/icon/next.svg"></use>
                     </svg>
                   </div>
@@ -301,7 +318,7 @@ export default function Bar() {
                     </div>
                   </div>
 
-                  <div className={styles.trackPlay__likeDis}>
+                  <div className={styles.trackPlay__dislike}>
                     <div
                       className={`${styles.trackPlay__like} ${styles.btnIcon} ${isLiked ? styles.active : ''}`}
                       onClick={handleLikeClick}
@@ -318,6 +335,13 @@ export default function Bar() {
                         <use xlinkHref="/icon/dislike.svg"></use>
                       </svg>
                     </div>
+                    {currentTrack && duration > 0 && (
+                      <div className={styles.track__time}>
+                        <span className={styles.track__timeText}>
+                          {formatTime(currentTime)} / {formatTime(duration)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -366,6 +390,7 @@ export default function Bar() {
       handleVolumeChange,
       handleLikeClick,
       handleDislikeClick,
+      formatTime,
     ],
   );
 

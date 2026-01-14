@@ -1,22 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './FilterPopupContent.module.css';
 
 interface FilterPopupContentProps {
   title: string;
   items: string[];
   filterType: 'artist' | 'year' | 'genre';
-  onItemClick?: (item: string) => void;
+  selectedItems?: string[];
+  onItemToggle?: (item: string) => void;
 }
 
 export default function FilterPopupContent({
   title,
   items,
   filterType,
-  onItemClick,
+  selectedItems = [],
+  onItemToggle,
 }: FilterPopupContentProps) {
   const [isMobile, setIsMobile] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -30,27 +33,25 @@ export default function FilterPopupContent({
   }, []);
 
   const handleItemClick = (item: string) => {
-    if (onItemClick) {
-      onItemClick(item);
+    if (onItemToggle) {
+      onItemToggle(item);
     }
   };
 
-  // Для мобильных добавляем класс compact если много элементов
-  const listClassName =
-    isMobile && items.length > 8
-      ? `${styles.filter__list} ${styles['filter__list--compact']}`
-      : styles.filter__list;
+  const listClassName = isMobile
+    ? `${styles.filter__list}`
+    : styles.filter__list;
 
   return (
     <div className={styles.filter__popupContent}>
       <h3 className={styles.filter__popupTitle}>{title}</h3>
-      <div className={listClassName}>
+      <div className={listClassName} ref={listRef}>
         {items.map((item, index) => {
-          // Для длинных имён добавляем специальный класс
+          const isSelected = selectedItems.includes(item);
           const isLongName = item.length > 20;
           const itemClassName = isLongName
-            ? `${styles.filter__item} ${styles['filter__item--long']}`
-            : styles.filter__item;
+            ? `${styles.filter__item} ${styles['filter__item--long']} ${isSelected ? styles.active : ''}`
+            : `${styles.filter__item} ${isSelected ? styles.active : ''}`;
 
           return (
             <div
@@ -62,7 +63,7 @@ export default function FilterPopupContent({
               onKeyDown={(e) => e.key === 'Enter' && handleItemClick(item)}
               title={item}
             >
-              {item}
+              {item} {isSelected && '✓'}
             </div>
           );
         })}

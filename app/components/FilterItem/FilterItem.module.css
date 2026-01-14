@@ -43,7 +43,6 @@
     max-width: min(320px, 90vw);
 }
 
-/* Анимация появления попапа */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -56,7 +55,6 @@
     }
 }
 
-/* Для кнопок текстовых */
 .btnText:hover {
     border-color: #d9b6ff;
     color: #d9b6ff;
@@ -69,7 +67,6 @@
     cursor: pointer;
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media (max-width: 768px) {
     .filterItemContainer {
         width: 100%;
@@ -106,14 +103,12 @@
         box-sizing: border-box;
     }
 
-    /* Если попап выходит за правый край экрана */
     .filter__popup {
         left: 50% !important;
         right: auto !important;
     }
 }
 
-/* Для планшетов */
 @media (min-width: 769px) and (max-width: 1024px) {
     .filter__popup {
         max-width: 280px;
@@ -121,7 +116,6 @@
     }
 }
 
-/* Для очень маленьких экранов */
 @media (max-width: 480px) {
     .filter__button {
         font-size: 13px;
@@ -135,7 +129,6 @@
     }
 }
 
-/* Для экстремально маленьких экранов */
 @media (max-width: 320px) {
     .filter__button {
         font-size: 12px;

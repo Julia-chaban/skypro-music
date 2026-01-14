@@ -15,9 +15,19 @@ type FilterType = 'artist' | 'year' | 'genre' | null;
 
 interface FilterProps {
   tracks?: typeof defaultTracks;
+  selectedArtists?: string[];
+  selectedGenres?: string[];
+  onArtistToggle?: (artist: string) => void;
+  onGenreToggle?: (genre: string) => void;
 }
 
-export default function Filter({ tracks = defaultTracks }: FilterProps) {
+export default function Filter({
+  tracks = defaultTracks,
+  selectedArtists = [],
+  selectedGenres = [],
+  onArtistToggle,
+  onGenreToggle,
+}: FilterProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
 
   const tracksToUse =
@@ -41,12 +51,15 @@ export default function Filter({ tracks = defaultTracks }: FilterProps) {
         filterType="artist"
         isActive={activeFilter === 'artist'}
         onClick={() => handleFilterClick('artist')}
+        selectedCount={selectedArtists.length}
         popupContent={
           activeFilter === 'artist' && (
             <FilterPopupContent
               title="Исполнитель"
               items={uniqueArtists}
               filterType="artist"
+              selectedItems={selectedArtists}
+              onItemToggle={onArtistToggle}
             />
           )
         }
@@ -56,6 +69,7 @@ export default function Filter({ tracks = defaultTracks }: FilterProps) {
         filterType="year"
         isActive={activeFilter === 'year'}
         onClick={() => handleFilterClick('year')}
+        selectedCount={0}
         popupContent={
           activeFilter === 'year' && (
             <FilterPopupContent
@@ -71,12 +85,15 @@ export default function Filter({ tracks = defaultTracks }: FilterProps) {
         filterType="genre"
         isActive={activeFilter === 'genre'}
         onClick={() => handleFilterClick('genre')}
+        selectedCount={selectedGenres.length}
         popupContent={
           activeFilter === 'genre' && (
             <FilterPopupContent
               title="Жанр"
               items={uniqueGenres}
               filterType="genre"
+              selectedItems={selectedGenres}
+              onItemToggle={onGenreToggle}
             />
           )
         }

@@ -26,13 +26,11 @@
     white-space: nowrap;
 }
 
-/* Контейнер для кнопки фильтра */
 .filterItemContainer {
     position: relative;
     display: inline-block;
 }
 
-/* Стили кнопок фильтра как в оригинале */
 .filter__button {
     font-style: normal;
     font-weight: 400;
@@ -52,13 +50,11 @@
     margin-right: 10px;
 }
 
-/* Активное состояние кнопки */
 .filter__button.active {
     border-color: #ad61ff;
     color: #ad61ff;
 }
 
-/* Попап */
 .filter__popup {
     position: absolute;
     top: calc(100% + 10px);
@@ -70,12 +66,14 @@
     min-width: 280px;
     max-width: 320px;
     max-height: 305px;
+    /* Высота попапа */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
     max-width: min(320px, 90vw);
+    overflow: hidden;
+    /* Важно для скролла */
 }
 
-/* Анимация появления попапа */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -88,7 +86,6 @@
     }
 }
 
-/* Стили hover и active как в оригинале */
 .filter__button:hover {
     border-color: #d9b6ff;
     color: #d9b6ff;
@@ -101,7 +98,18 @@
     cursor: pointer;
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+/* Стили для кнопки с выбранными элементами */
+.filter__button.withSelection {
+    border-color: #ad61ff;
+    color: #ad61ff;
+    background-color: rgba(182, 114, 255, 0.1);
+}
+
+.filter__button.withSelection:hover {
+    border-color: #d9b6ff;
+    color: #d9b6ff;
+}
+
 @media (max-width: 768px) {
     .centerblock__filter {
         flex-direction: column;
@@ -150,13 +158,13 @@
         width: 90vw !important;
         max-width: 300px !important;
         max-height: 70vh !important;
+        /* Высота для мобильных */
         z-index: 1001 !important;
         padding: 24px !important;
         box-sizing: border-box;
     }
 }
 
-/* Для очень маленьких экранов */
 @media (max-width: 480px) {
     .centerblock__filter {
         margin-bottom: 20px;

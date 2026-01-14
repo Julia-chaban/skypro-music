@@ -9,7 +9,7 @@ import {
   setCurrentTrackIndex,
 } from '@/store/features/trackSlice';
 import { Track } from '@/types/track';
-import { formatDuration, getYearFromDate } from '@/data/tracks';
+import { formatDuration } from '@/data/tracks';
 import styles from './TrackItem.module.css';
 
 interface TrackItemProps {
@@ -19,7 +19,6 @@ interface TrackItemProps {
 }
 
 export default function TrackItem({ track, index, tracks }: TrackItemProps) {
-  const year = getYearFromDate(track.release_date);
   const [isLiked, setIsLiked] = useState(false);
 
   const dispatch = useAppDispatch();
@@ -52,19 +51,20 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
-            {/* Иконка ноты с исправленным путем */}
-            <svg className={styles.track__titleSvg}>
-              <use xlinkHref="/icon/note.svg"></use>
-            </svg>
-
-            {/* Пульсирующая точка ТОЛЬКО для текущего играющего трека */}
-            {isCurrentTrack && isPlaying && (
+            {/* Показываем ноту ТОЛЬКО если это НЕ текущий играющий трек */}
+            {!isCurrentlyPlaying ? (
+              <svg className={styles.track__titleSvg}>
+                <use xlinkHref="/icon/note.svg"></use>
+              </svg>
+            ) : (
+              /* Показываем пульсирующую точку ТОЛЬКО для текущего играющего трека */
               <div className={styles.track__titleImageDotPulsing} />
             )}
           </div>
           <div className={styles.track__titleText}>
             <a className={styles.track__titleLink} href="">
               {track.name}
+              <span className={styles.track__titleSpan}></span>
             </a>
           </div>
         </div>
@@ -79,10 +79,6 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
           <a className={styles.track__albumLink} href="">
             {track.album}
           </a>
-        </div>
-
-        <div className={styles.track__year}>
-          <span className={styles.track__yearText}>{year}</span>
         </div>
 
         <div className={styles.track__time}>

@@ -105,11 +105,9 @@
 
 .player__btnPrevSvg {
     width: 16px;
-    /* Исправлено: ширина из prev.svg */
     height: 14px;
-    /* Исправлено: высота из prev.svg */
-    fill: transparent;
-    stroke: #d9d9d9;
+    fill: #ffffff;
+    stroke: #ffffff;
 }
 
 .player__btnPlay {
@@ -118,10 +116,8 @@
 
 .player__btnPlaySvg {
     width: 15px;
-    /* Исправлено: ширина из play.svg */
     height: 20px;
-    /* Исправлено: высота из play.svg */
-    fill: #d9d9d9;
+    fill: #ffffff;
 }
 
 .player__btnNext {
@@ -130,11 +126,9 @@
 
 .player__btnNextSvg {
     width: 16px;
-    /* Исправлено: ширина из next.svg */
     height: 14px;
-    /* Исправлено: высота из next.svg */
-    fill: #a53939;
-    stroke: #d9d9d9;
+    fill: #ffffff;
+    stroke: #ffffff;
 }
 
 .player__btnRepeat {
@@ -143,9 +137,7 @@
 
 .player__btnRepeatSvg {
     width: 20px;
-    /* Исправлено: ширина из repeat.svg */
     height: 18px;
-    /* Исправлено: высота из repeat.svg */
     fill: transparent;
     stroke: #696969;
 }
@@ -161,9 +153,7 @@
 
 .player__btnShuffleSvg {
     width: 20px;
-    /* Исправлено: ширина из shuffle.svg */
     height: 18px;
-    /* Исправлено: высота из shuffle.svg */
     fill: transparent;
     stroke: #696969;
 }
@@ -212,9 +202,7 @@
 
 .trackPlay__svg {
     width: 20px;
-    /* Исправлено: ширина из note.svg */
     height: 19px;
-    /* Исправлено: высота из note.svg */
     fill: transparent;
     stroke: #4e4e4e;
 }
@@ -252,7 +240,8 @@
     text-decoration: none;
 }
 
-.trackPlay__likeDis {
+/* ИСПРАВЛЕНО: в оригинале класс trackPlay__dislike, а не trackPlay__likeDis */
+.trackPlay__dislike {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -273,9 +262,7 @@
 
 .trackPlay__likeSvg {
     width: 16px;
-    /* Исправлено: ширина из like.svg */
     height: 14px;
-    /* Исправлено: высота из like.svg */
     fill: transparent;
     stroke: #696969;
 }
@@ -286,11 +273,26 @@
 
 .trackPlay__dislikeSvg {
     width: 16px;
-    /* Исправлено: ширина из dislike.svg */
     height: 15px;
-    /* Исправлено: высота из dislike.svg */
     fill: transparent;
     stroke: #696969;
+}
+
+/* ДОБАВЛЕНО: стили для отображения времени */
+.track__time {
+    margin-left: 28.5px;
+    display: flex;
+    align-items: center;
+}
+
+.track__timeText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: right;
+    color: #696969;
+    white-space: nowrap;
 }
 
 .volume__content {
@@ -311,17 +313,13 @@
 
 .volume__image {
     width: 14px;
-    /* Исправлено: ширина из volume.svg */
     height: 18px;
-    /* Исправлено: высота из volume.svg */
     margin-right: 17px;
 }
 
 .volume__svg {
     width: 14px;
-    /* Исправлено: ширина из volume.svg */
     height: 18px;
-    /* Исправлено: высота из volume.svg */
     fill: transparent;
     stroke: #ffffff;
 }
@@ -400,11 +398,15 @@
         padding: 0 15px 0 15px;
     }
 
-    .trackPlay__likeDis {
+    .trackPlay__dislike {
         margin-left: 15px;
     }
 
     .volume__image {
         margin-right: 10px;
+    }
+
+    .track__time {
+        margin-left: 15px;
     }
 }

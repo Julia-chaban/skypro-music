@@ -56,44 +56,36 @@
 
 /* Пульсирующая точка для текущего играющего трека */
 .track__titleImageDotPulsing {
-    position: absolute;
     width: 16px;
     height: 16px;
     background-color: #b672ff;
     border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: trackPulse 1.5s infinite ease-in-out;
-    z-index: 1;
+    animation: pulse 1.5s infinite ease-in-out;
 }
 
 /* Анимация пульсации */
-@keyframes trackPulse {
+@keyframes pulse {
     0% {
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: scale(0.8);
         opacity: 0.7;
     }
 
     50% {
-        transform: translate(-50%, -50%) scale(1.2);
+        transform: scale(1.2);
         opacity: 1;
     }
 
     100% {
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: scale(0.8);
         opacity: 0.7;
     }
 }
 
 .track__titleSvg {
     width: 20px;
-    /* Исправлено: ширина из note.svg */
     height: 19px;
-    /* Исправлено: высота из note.svg */
     fill: transparent;
     stroke: #4e4e4e;
-    /* Цвет из note.svg */
     position: relative;
     z-index: 2;
 }
@@ -150,20 +142,6 @@
     display: block;
 }
 
-.track__year {
-    width: 80px;
-}
-
-.track__yearText {
-    font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 24px;
-    color: #696969;
-    text-align: left;
-    display: block;
-}
-
 .track__time {
     display: flex;
     align-items: center;
@@ -173,9 +151,7 @@
 
 .track__timeSvg {
     width: 16px;
-    /* Исправлено: ширина из like.svg */
     height: 14px;
-    /* Исправлено: высота из like.svg */
     margin-right: 17px;
     fill: transparent;
     stroke: #696969;
@@ -197,7 +173,6 @@
     min-width: 40px;
 }
 
-/* Адаптивность */
 @media (max-width: 1200px) {
     .track__title {
         width: 320px;
@@ -225,10 +200,6 @@
         width: 120px;
     }
 
-    .track__year {
-        width: 60px;
-    }
-
     .track__time {
         width: 50px;
     }
@@ -240,8 +211,7 @@
     }
 
     .track__author,
-    .track__album,
-    .track__year {
+    .track__album {
         display: none;
     }
 

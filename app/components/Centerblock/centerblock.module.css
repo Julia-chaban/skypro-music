@@ -3,10 +3,13 @@
     -webkit-box-flex: 3;
     -ms-flex-positive: 3;
     flex-grow: 3;
-    padding: 20px 40px 20px 111px;
+    /* ИСПРАВЛЕНО: отступ слева 283px как в оригинале */
+    padding: 20px 40px 20px 283px;
+    /* Ширина centerblock: 1136px как в оригинале */
+    width: 1136px;
+    box-sizing: border-box;
 }
 
-/* Стили для поиска как в оригинале */
 .centerblock__search {
     width: 100%;
     border-bottom: 1px solid #4e4e4e;
@@ -91,6 +94,58 @@
     color: white;
 }
 
+.centerblock__filter {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    margin-bottom: 51px;
+}
+
+.filter__title {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    margin-right: 15px;
+    color: white;
+}
+
+.filter__button {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    border: 1px solid #ffffff;
+    border-radius: 60px;
+    padding: 6px 20px;
+    color: white;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.filter__button:not(:last-child) {
+    margin-right: 10px;
+}
+
+.filter__button:hover {
+    border-color: #d9b6ff;
+    color: #d9b6ff;
+    cursor: pointer;
+}
+
+.filter__button:active {
+    border-color: #ad61ff;
+    color: #ad61ff;
+    cursor: pointer;
+}
+
 .centerblock__content {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -171,10 +226,6 @@
     text-align: end;
 }
 
-.col05 {
-    width: 80px;
-}
-
 .playlistTitle__svg {
     width: 12px;
     height: 12px;
@@ -182,9 +233,9 @@
     stroke: #696969;
 }
 
-/* Стили для состояний загрузки и ошибок */
 .loading {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 200px;
@@ -274,7 +325,13 @@
     content: "⚠️ ";
 }
 
+/* МЕДИА-ЗАПРОСЫ (не трогаю, только для мобильных) */
 @media (max-width: 1200px) {
+    .centerblock {
+        padding: 20px 40px 20px 200px;
+        width: auto;
+    }
+
     .col01 {
         width: 320px;
     }
@@ -287,10 +344,6 @@
         width: 200px;
     }
 
-    .col05 {
-        width: 60px;
-    }
-
     .col04 {
         width: 60px;
     }
@@ -299,6 +352,7 @@
 @media (max-width: 768px) {
     .centerblock {
         padding: 20px 20px 20px 90px;
+        width: 100%;
     }
 
     .centerblock__search {
@@ -311,6 +365,13 @@
         line-height: 40px;
         margin-bottom: 20px;
         padding: 0 15px;
+    }
+
+    .centerblock__filter {
+        margin-bottom: 30px;
+        padding: 0 15px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
     .centerblock__content {
@@ -327,10 +388,6 @@
 
     .col03 {
         width: 120px;
-    }
-
-    .col05 {
-        width: 50px;
     }
 
     .col04 {
@@ -355,6 +412,16 @@
         font-size: 24px;
         line-height: 32px;
         padding: 0 10px;
+    }
+
+    .centerblock__filter {
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .filter__button {
+        font-size: 14px;
+        padding: 4px 12px;
     }
 
     .centerblock__content {

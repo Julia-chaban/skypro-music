@@ -57,69 +57,34 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
 
   return (
     <nav className={styles.main__nav}>
-      {/* На десктопе: логотип СВЕРХУ, под ним бургер */}
-      {!isMobile && (
-        <>
-          <div className={styles.nav__logo}>
-            <Link href="/">
-              <Image
-                width={113}
-                height={17}
-                className={styles.logo__image}
-                src="/img/logo.png"
-                alt="logo"
-                priority
-              />
-            </Link>
-          </div>
+      {/* Логотип всегда сверху */}
+      <div className={styles.nav__logo}>
+        <Link href="/">
+          <Image
+            width={113}
+            height={17}
+            className={styles.logo__image}
+            src="/img/logo.png"
+            alt="logo"
+            priority
+          />
+        </Link>
+      </div>
 
-          {/* Бургер под логотипом на десктопе */}
-          <div
-            className={`${styles.nav__burger} ${isDesktopMenuOpen ? styles.active : ''}`}
-            onClick={handleBurgerClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
-          >
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-          </div>
-        </>
-      )}
+      {/* Бургер всегда виден */}
+      <div
+        className={`${styles.nav__burger} ${isMobile ? (isMobileMenuOpen ? styles.active : '') : isDesktopMenuOpen ? styles.active : ''}`}
+        onClick={handleBurgerClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
+      >
+        <span className={styles.burger__line}></span>
+        <span className={styles.burger__line}></span>
+        <span className={styles.burger__line}></span>
+      </div>
 
-      {/* На мобильных: логотип и бургер в строке */}
-      {isMobile && (
-        <>
-          <div className={styles.nav__logo}>
-            <Link href="/">
-              <Image
-                width={113}
-                height={17}
-                className={styles.logo__image}
-                src="/img/logo.png"
-                alt="logo"
-                priority
-              />
-            </Link>
-          </div>
-
-          {/* Бургер справа на мобильных */}
-          <div
-            className={`${styles.nav__burger} ${isMobileMenuOpen ? styles.active : ''}`}
-            onClick={handleBurgerClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
-          >
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-          </div>
-        </>
-      )}
-
-      {/* Десктопное меню (открывается при клике на бургер под лого) */}
+      {/* Десктопное меню (скрыто по умолчанию, открывается при клике на бургер) */}
       {!isMobile && (
         <div
           className={`${styles.nav__menu} ${isDesktopMenuOpen ? styles.active : ''}`}
@@ -156,7 +121,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         </div>
       )}
 
-      {/* Мобильное меню (открывается при клике на бургер справа) */}
+      {/* Мобильное меню (только для мобильных) */}
       {isMobile && (
         <div
           className={`${styles.nav__mobile_menu} ${isMobileMenuOpen ? styles.active : ''}`}
