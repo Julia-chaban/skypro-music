@@ -57,6 +57,7 @@ const trackSlice = createSlice({
         // Если трека нет в активном плейлисте, добавляем его как единственный
         state.playlist = [track];
         state.filteredPlaylist = [track];
+        // При создании нового плейлиста также создаем перемешанную версию
         state.shuffledPlaylist = [track];
         state.currentTrackIndex = 0;
       }
@@ -65,7 +66,20 @@ const trackSlice = createSlice({
     setPlaylist: (state, action: PayloadAction<Track[]>) => {
       const playlist = action.payload;
       state.playlist = playlist;
-      state.shuffledPlaylist = [...playlist];
+
+      // При установке нового плейлиста также создаем перемешанную версию
+      if (state.isShuffling) {
+        // Если shuffle включен, перемешиваем
+        const shuffled = [...playlist];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        state.shuffledPlaylist = shuffled;
+      } else {
+        // Если shuffle выключен, просто копируем
+        state.shuffledPlaylist = [...playlist];
+      }
 
       // Если есть текущий трек, обновляем его индекс
       if (state.currentTrack) {
@@ -92,6 +106,18 @@ const trackSlice = createSlice({
       state.filteredPlaylist = action.payload;
       state.useFilteredPlaylist = action.payload.length > 0;
 
+      // Обновляем shuffledPlaylist для фильтрованного плейлиста
+      if (state.isShuffling && state.filteredPlaylist.length > 0) {
+        const shuffled = [...state.filteredPlaylist];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        state.shuffledPlaylist = shuffled;
+      } else if (state.filteredPlaylist.length > 0) {
+        state.shuffledPlaylist = [...state.filteredPlaylist];
+      }
+
       // Если есть текущий трек, проверяем есть ли он в фильтрованном плейлисте
       if (state.currentTrack && state.useFilteredPlaylist) {
         const index = state.filteredPlaylist.findIndex(
@@ -111,37 +137,25 @@ const trackSlice = createSlice({
     // ДОБАВЛЯЕМ action для сброса фильтрации
     resetFilteredPlaylist: (state) => {
       state.useFilteredPlaylist = false;
+
+      // Обновляем shuffledPlaylist для основного плейлиста
+      if (state.isShuffling && state.playlist.length > 0) {
+        const shuffled = [...state.playlist];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        state.shuffledPlaylist = shuffled;
+      } else {
+        state.shuffledPlaylist = [...state.playlist];
+      }
+
       if (state.currentTrack) {
         const index = state.playlist.findIndex(
           (track) => track._id === state.currentTrack?._id,
         );
         if (index !== -1) {
           state.currentTrackIndex = index;
-        }
-      }
-    },
-
-    // ИСПРАВЛЯЕМ вспомогательную функцию для перемешивания
-    _shufflePlaylist: (state) => {
-      const activePlaylist = state.useFilteredPlaylist
-        ? state.filteredPlaylist
-        : state.playlist;
-
-      if (activePlaylist.length > 0) {
-        const shuffled = [...activePlaylist];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        state.shuffledPlaylist = shuffled;
-
-        if (state.currentTrack) {
-          const index = shuffled.findIndex(
-            (track) => track._id === state.currentTrack?._id,
-          );
-          if (index !== -1) {
-            state.currentTrackIndex = index;
-          }
         }
       }
     },
@@ -170,6 +184,7 @@ const trackSlice = createSlice({
 
       if (index >= 0 && index < activePlaylist.length) {
         state.currentTrackIndex = index;
+        // В зависимости от режима shuffle выбираем трек из соответствующего плейлиста
         state.currentTrack = state.isShuffling
           ? state.shuffledPlaylist[index]
           : activePlaylist[index];
@@ -185,19 +200,24 @@ const trackSlice = createSlice({
     },
 
     toggleLooping: (state) => {
+      // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ ЗАЦИКЛИВАНИЯ ТРЕКА
       state.isLooping = !state.isLooping;
+      console.log('Looping:', state.isLooping);
     },
 
     toggleShuffling: (state) => {
       const wasShuffling = state.isShuffling;
       state.isShuffling = !state.isShuffling;
+      console.log('Shuffling:', state.isShuffling);
 
       if (!wasShuffling && state.isShuffling) {
+        // ВКЛЮЧЕНИЕ SHUFFLE - перемешиваем треки
         const activePlaylist = state.useFilteredPlaylist
           ? state.filteredPlaylist
           : state.playlist;
 
         if (activePlaylist.length > 0) {
+          // Создаем перемешанную копию
           const shuffled = [...activePlaylist];
           for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -205,6 +225,7 @@ const trackSlice = createSlice({
           }
           state.shuffledPlaylist = shuffled;
 
+          // Обновляем индекс текущего трека в перемешанном плейлисте
           if (state.currentTrack) {
             const index = shuffled.findIndex(
               (track) => track._id === state.currentTrack?._id,
@@ -215,6 +236,7 @@ const trackSlice = createSlice({
           }
         }
       } else if (wasShuffling && !state.isShuffling) {
+        // ВЫКЛЮЧЕНИЕ SHUFFLE - возвращаемся к обычному порядку
         if (state.currentTrack) {
           const activePlaylist = state.useFilteredPlaylist
             ? state.filteredPlaylist
@@ -230,7 +252,36 @@ const trackSlice = createSlice({
       }
     },
 
-    // ИСПРАВЛЯЕМ nextTrack для работы с фильтрованным плейлистом
+    // ФУНКЦИЯ ДЛЯ ПОВТОРНОГО ПЕРЕМЕШИВАНИЯ ТРЕКОВ
+    reshufflePlaylist: (state) => {
+      if (state.isShuffling) {
+        const activePlaylist = state.useFilteredPlaylist
+          ? state.filteredPlaylist
+          : state.playlist;
+
+        if (activePlaylist.length > 0) {
+          // Каждый раз при новом включении перемешиваем заново
+          const shuffled = [...activePlaylist];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          state.shuffledPlaylist = shuffled;
+
+          // Обновляем индекс текущего трека
+          if (state.currentTrack) {
+            const index = shuffled.findIndex(
+              (track) => track._id === state.currentTrack?._id,
+            );
+            if (index !== -1) {
+              state.currentTrackIndex = index;
+            }
+          }
+        }
+      }
+    },
+
+    // СЛЕДУЮЩИЙ ТРЕК (работает с shuffle и loop)
     nextTrack: (state) => {
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
@@ -238,6 +289,7 @@ const trackSlice = createSlice({
 
       if (activePlaylist.length === 0) return;
 
+      // Выбираем плейлист в зависимости от режима shuffle
       const playlist = state.isShuffling
         ? state.shuffledPlaylist
         : activePlaylist;
@@ -245,14 +297,19 @@ const trackSlice = createSlice({
       if (playlist.length > 0) {
         let nextIndex = state.currentTrackIndex + 1;
 
+        // Проверяем, достигли ли конца плейлиста
         if (nextIndex >= playlist.length) {
-          nextIndex = state.isLooping ? 0 : state.currentTrackIndex;
-          if (!state.isLooping) {
+          if (state.isLooping) {
+            // Если включен loop - начинаем сначала
+            nextIndex = 0;
+          } else {
+            // Если loop выключен - останавливаем воспроизведение
             state.isPlaying = false;
             return;
           }
         }
 
+        // Обновляем текущий трек
         state.currentTrackIndex = nextIndex;
         state.currentTrack = playlist[nextIndex];
         state.currentTime = 0;
@@ -260,7 +317,7 @@ const trackSlice = createSlice({
       }
     },
 
-    // ИСПРАВЛЯЕМ prevTrack для работы с фильтрованным плейлистом
+    // ПРЕДЫДУЩИЙ ТРЕК (работает с shuffle и loop)
     prevTrack: (state) => {
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
@@ -268,6 +325,7 @@ const trackSlice = createSlice({
 
       if (activePlaylist.length === 0) return;
 
+      // Выбираем плейлист в зависимости от режима shuffle
       const playlist = state.isShuffling
         ? state.shuffledPlaylist
         : activePlaylist;
@@ -275,16 +333,19 @@ const trackSlice = createSlice({
       if (playlist.length > 0) {
         let prevIndex = state.currentTrackIndex - 1;
 
+        // Проверяем, достигли ли начала плейлиста
         if (prevIndex < 0) {
-          prevIndex = state.isLooping
-            ? playlist.length - 1
-            : state.currentTrackIndex;
-          if (!state.isLooping) {
+          if (state.isLooping) {
+            // Если включен loop - переходим к последнему треку
+            prevIndex = playlist.length - 1;
+          } else {
+            // Если loop выключен - останавливаем воспроизведение
             state.isPlaying = false;
             return;
           }
         }
 
+        // Обновляем текущий трек
         state.currentTrackIndex = prevIndex;
         state.currentTrack = playlist[prevIndex];
         state.currentTime = 0;
@@ -320,6 +381,7 @@ export const {
   togglePlaying,
   toggleLooping,
   toggleShuffling,
+  reshufflePlaylist, // Экспортируем функцию для повторного перемешивания
   nextTrack,
   prevTrack,
   setProgress,

@@ -19,19 +19,12 @@
 .bar__playerProgress {
     width: 100%;
     height: 5px;
-    background: #2e2e2e;
+    /* УБРАТЬ ЭТУ СТРОКУ: background: #2e2e2e; */
     cursor: pointer;
     position: relative;
 }
 
-.bar__playerProgressFilled {
-    height: 100%;
-    background: #b672ff;
-    transition: width 0.1s linear;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
+
 
 .bar__playerBlock {
     height: 73px;
@@ -330,33 +323,6 @@
     align-items: center;
 }
 
-.volume__progressLine {
-    width: 100%;
-    height: 2px;
-    appearance: none;
-    background: #797979;
-    border-radius: 5px;
-    outline: none;
-    cursor: pointer;
-}
-
-.volume__progressLine::-webkit-slider-runnable-track {
-    height: 2px;
-    background: #797979;
-    border-radius: 5px;
-}
-
-.volume__progressLine::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #1a1a1a;
-    border: 2px solid white;
-    border-radius: 50%;
-    position: relative;
-    margin-top: -7px;
-}
-
 .btn {
     cursor: pointer;
     background: none;
@@ -388,7 +354,7 @@
     stroke: #b672ff !important;
 }
 
-/* Мобильная версия */
+/* Мобильная версия для средних экранов */
 @media (max-width: 768px) {
     .bar__volumeBlock {
         padding: 0 15px 0 0;
@@ -408,5 +374,119 @@
 
     .track__time {
         margin-left: 15px;
+    }
+
+    /* Адаптив для ProgressBar контейнера */
+    .bar__playerProgress {
+        height: 4px;
+    }
+}
+
+/* Адаптив для маленьких экранов (425px) */
+@media (max-width: 425px) {
+    .bar__playerBlock {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 5px 0;
+    }
+
+    .bar__player {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
+    }
+
+    .bar__volumeBlock {
+        width: 100%;
+        justify-content: center;
+        padding: 0 10px;
+    }
+
+    .volume__progress {
+        width: 80px;
+    }
+
+    .player__controls {
+        padding: 0 5px;
+    }
+
+    .player__btnPrev,
+    .player__btnPlay,
+    .player__btnNext,
+    .player__btnRepeat,
+    .player__btnShuffle {
+        padding: 3px;
+    }
+
+    .player__btnPrev {
+        margin-right: 10px;
+    }
+
+    .player__btnPlay {
+        margin-right: 10px;
+    }
+
+    .player__btnNext {
+        margin-right: 15px;
+    }
+
+    .player__btnRepeat {
+        margin-right: 10px;
+    }
+
+    .trackPlay__contain {
+        display: none;
+    }
+
+    .trackPlay__dislike {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .track__time {
+        margin-left: 10px;
+    }
+
+    .track__timeText {
+        font-size: 14px;
+    }
+
+    /* Адаптив для ProgressBar контейнера */
+    .bar__playerProgress {
+        height: 3px;
+    }
+}
+
+/* Адаптив для очень маленьких экранов (375px) */
+@media (max-width: 375px) {
+    .volume__progress {
+        width: 60px;
+    }
+
+    .player__controls {
+        padding: 0 2px;
+    }
+
+    .player__btnPrev,
+    .player__btnPlay,
+    .player__btnNext,
+    .player__btnRepeat,
+    .player__btnShuffle {
+        padding: 2px;
+        margin-right: 5px;
+    }
+
+    .track__time {
+        margin-left: 5px;
+    }
+
+    .track__timeText {
+        font-size: 12px;
+    }
+
+    /* Адаптив для ProgressBar контейнера */
+    .bar__playerProgress {
+        height: 2px;
     }
 }

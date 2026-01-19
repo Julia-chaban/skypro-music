@@ -21,7 +21,8 @@ import {
   toggleShuffling,
 } from '@/store/features/trackSlice';
 import styles from './bar.module.css';
-import ProgressBar from '../ProgressBar/ProgressBar'; // Импорт компонента ProgressBar
+import ProgressBar from '../ProgressBar/ProgressBar';
+import VolumeControl from '../VolumeControl/VolumeControl';
 
 export default function Bar() {
   const [isLiked, setIsLiked] = useState(false);
@@ -59,6 +60,7 @@ export default function Bar() {
     };
 
     const handleEnded = () => {
+      // АВТОМАТИЧЕСКИЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
       dispatch(nextTrack());
     };
 
@@ -80,7 +82,7 @@ export default function Bar() {
     };
   }, [dispatch]);
 
-  // Установка трека
+  // Установка трека и управление воспроизведением
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
@@ -156,24 +158,28 @@ export default function Bar() {
   }, [currentTrack, dispatch]);
 
   const handleNextClick = useCallback(() => {
+    // РУЧНОЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
     dispatch(nextTrack());
   }, [dispatch]);
 
   const handlePrevClick = useCallback(() => {
+    // РУЧНОЙ ПЕРЕХОД К ПРЕДЫДУЩЕМУ ТРЕКУ
     dispatch(prevTrack());
   }, [dispatch]);
 
   const handleRepeatClick = useCallback(() => {
+    // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ РЕЖИМА ЗАЦИКЛИВАНИЯ ТРЕКА
     dispatch(toggleLooping());
   }, [dispatch]);
 
   const handleShuffleClick = useCallback(() => {
+    // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ РЕЖИМА ПЕРЕМЕШИВАНИЯ (SHUFFLE)
     dispatch(toggleShuffling());
   }, [dispatch]);
 
+  // Обработчик для VolumeControl
   const handleVolumeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newVolume = parseInt(e.target.value) / 100;
+    (newVolume: number) => {
       dispatch(setVolume(newVolume));
     },
     [dispatch],
@@ -210,7 +216,7 @@ export default function Bar() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }, []);
 
-  // Мемоизация JSX
+  // Мемоизация JSX - ВЕРСТКА НЕ ИЗМЕНЕНА, ТОЛЬКО ОБРАБОТЧИКИ ДОБАВЛЕНЫ
   const barContent = useMemo(
     () => (
       <>
@@ -222,17 +228,12 @@ export default function Bar() {
           <div className={styles.bar__content}>
             {/* Прогресс-бар с использованием компонента ProgressBar */}
             <div className={styles.bar__playerProgress}>
-              {currentTrack && duration > 0 ? (
+              {currentTrack && duration > 0 && (
                 <ProgressBar
                   max={duration}
                   value={currentTime}
                   step={0.1}
                   onChange={handleProgressChange}
-                />
-              ) : (
-                <div
-                  className={styles.bar__playerProgressFilled}
-                  style={{ width: '0%' }}
                 />
               )}
             </div>
@@ -240,6 +241,7 @@ export default function Bar() {
             <div className={styles.bar__playerBlock}>
               <div className={styles.bar__player}>
                 <div className={styles.player__controls}>
+                  {/* КНОПКА ПРЕДЫДУЩЕГО ТРЕКА */}
                   <div
                     className={`${styles.player__btnPrev} ${styles.btn}`}
                     onClick={currentTrack ? handlePrevClick : undefined}
@@ -251,6 +253,7 @@ export default function Bar() {
                       <use xlinkHref="/icon/prev.svg"></use>
                     </svg>
                   </div>
+                  {/* КНОПКА ВОСПРОИЗВЕДЕНИЯ/ПАУЗЫ */}
                   <div
                     className={`${styles.player__btnPlay} ${styles.btn}`}
                     onClick={currentTrack ? handlePlayClick : undefined}
@@ -266,6 +269,7 @@ export default function Bar() {
                       )}
                     </svg>
                   </div>
+                  {/* КНОПКА СЛЕДУЮЩЕГО ТРЕКА */}
                   <div
                     className={`${styles.player__btnNext} ${styles.btn}`}
                     onClick={currentTrack ? handleNextClick : undefined}
@@ -277,6 +281,7 @@ export default function Bar() {
                       <use xlinkHref="/icon/next.svg"></use>
                     </svg>
                   </div>
+                  {/* КНОПКА ПОВТОРА (ЗАЦИКЛИВАНИЕ) */}
                   <div
                     className={`${styles.player__btnRepeat} ${styles.btnIcon} ${isLooping ? styles.active : ''}`}
                     onClick={currentTrack ? handleRepeatClick : undefined}
@@ -285,6 +290,7 @@ export default function Bar() {
                       <use xlinkHref="/icon/repeat.svg"></use>
                     </svg>
                   </div>
+                  {/* КНОПКА ПЕРЕМЕШИВАНИЯ (SHUFFLE) */}
                   <div
                     className={`${styles.player__btnShuffle} ${styles.btnIcon} ${isShuffling ? styles.active : ''}`}
                     onClick={currentTrack ? handleShuffleClick : undefined}
@@ -354,13 +360,9 @@ export default function Bar() {
                     </svg>
                   </div>
                   <div className={styles.volume__progress}>
-                    <input
-                      className={`${styles.volume__progressLine} ${styles.btn}`}
-                      type="range"
-                      name="range"
-                      min="0"
-                      max="100"
-                      value={volume * 100}
+                    {/* Используем компонент VolumeControl */}
+                    <VolumeControl
+                      volume={volume}
                       onChange={handleVolumeChange}
                     />
                   </div>

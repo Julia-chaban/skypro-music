@@ -6,6 +6,7 @@
     margin: 0;
     width: 100%;
     height: var(--progress-height);
+    -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
     background: transparent;
@@ -57,4 +58,49 @@
 .styledProgressInput::-moz-range-progress {
     background-color: var(--progress-color);
     height: var(--progress-height);
+}
+
+/* Адаптив для мобильных устройств */
+
+/* Для экранов до 768px */
+@media (max-width: 768px) {
+    .styledProgressInput {
+        --progress-height: 4px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 6px;
+    }
+}
+
+/* Для маленьких экранов (425px) */
+@media (max-width: 425px) {
+    .styledProgressInput {
+        --progress-height: 3px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 5px;
+    }
+
+    .styledProgressInput::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+    }
+}
+
+/* Для очень маленьких экранов (375px) */
+@media (max-width: 375px) {
+    .styledProgressInput {
+        --progress-height: 2px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 4px;
+    }
+
+    .styledProgressInput::-moz-range-thumb {
+        height: 18px;
+        width: 18px;
+    }
 }
