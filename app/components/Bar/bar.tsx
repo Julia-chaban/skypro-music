@@ -21,6 +21,7 @@ import {
   toggleShuffling,
 } from '@/store/features/trackSlice';
 import styles from './bar.module.css';
+import ProgressBar from '../ProgressBar/ProgressBar'; // Импорт компонента ProgressBar
 
 export default function Bar() {
   const [isLiked, setIsLiked] = useState(false);
@@ -178,13 +179,12 @@ export default function Bar() {
     [dispatch],
   );
 
-  const handleProgressClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  // Обработчик для ProgressBar компонента
+  const handleProgressChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!duration || !audioRef.current) return;
 
-      const rect = e.currentTarget.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      const newTime = percent * duration;
+      const newTime = parseFloat(e.target.value);
 
       dispatch(setProgress(newTime));
       audioRef.current.currentTime = newTime;
@@ -210,7 +210,7 @@ export default function Bar() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }, []);
 
-  // Мемоизация JSX для предотвращения лишних ререндеров
+  // Мемоизация JSX
   const barContent = useMemo(
     () => (
       <>
@@ -220,19 +220,19 @@ export default function Bar() {
         {/* ОДИН БАР - рендерится всегда */}
         <div className={styles.bar}>
           <div className={styles.bar__content}>
-            <div
-              className={styles.bar__playerProgress}
-              onClick={currentTrack ? handleProgressClick : undefined}
-            >
-              {currentTrack && (
+            {/* Прогресс-бар с использованием компонента ProgressBar */}
+            <div className={styles.bar__playerProgress}>
+              {currentTrack && duration > 0 ? (
+                <ProgressBar
+                  max={duration}
+                  value={currentTime}
+                  step={0.1}
+                  onChange={handleProgressChange}
+                />
+              ) : (
                 <div
                   className={styles.bar__playerProgressFilled}
-                  style={{
-                    width:
-                      duration > 0
-                        ? `${(currentTime / duration) * 100}%`
-                        : '0%',
-                  }}
+                  style={{ width: '0%' }}
                 />
               )}
             </div>
@@ -381,12 +381,12 @@ export default function Bar() {
       isShuffling,
       isLiked,
       isDisliked,
-      handleProgressClick,
       handlePrevClick,
       handlePlayClick,
       handleNextClick,
       handleRepeatClick,
       handleShuffleClick,
+      handleProgressChange,
       handleVolumeChange,
       handleLikeClick,
       handleDislikeClick,
