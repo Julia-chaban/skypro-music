@@ -2,8 +2,11 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100%;
+    width: calc(100% - 418px);
+
+    margin-right: 418px;
     background: rgba(28, 28, 28, 0.5);
+    z-index: 100;
 }
 
 .bar__content {
@@ -19,12 +22,9 @@
 .bar__playerProgress {
     width: 100%;
     height: 5px;
-    /* УБРАТЬ ЭТУ СТРОКУ: background: #2e2e2e; */
     cursor: pointer;
     position: relative;
 }
-
-
 
 .bar__playerBlock {
     height: 73px;
@@ -233,7 +233,6 @@
     text-decoration: none;
 }
 
-/* ИСПРАВЛЕНО: в оригинале класс trackPlay__dislike, а не trackPlay__likeDis */
 .trackPlay__dislike {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -271,7 +270,6 @@
     stroke: #696969;
 }
 
-/* ДОБАВЛЕНО: стили для отображения времени */
 .track__time {
     margin-left: 28.5px;
     display: flex;
@@ -349,13 +347,21 @@
     cursor: pointer;
 }
 
-/* Активные состояния */
+
 .active {
-    stroke: #b672ff !important;
+    stroke: #ffffff !important;
 }
 
-/* Мобильная версия для средних экранов */
+
+
+/* Для средних экранов (768px) */
 @media (max-width: 768px) {
+    .bar {
+        width: 100%;
+        /* САЙДБАР СКРЫТ НА МОБИЛЬНЫХ */
+        margin-right: 0;
+    }
+
     .bar__volumeBlock {
         padding: 0 15px 0 0;
     }
@@ -376,13 +382,12 @@
         margin-left: 15px;
     }
 
-    /* Адаптив для ProgressBar контейнера */
     .bar__playerProgress {
         height: 4px;
     }
 }
 
-/* Адаптив для маленьких экранов (425px) */
+/* Для маленьких экранов (425px) */
 @media (max-width: 425px) {
     .bar__playerBlock {
         flex-wrap: wrap;
@@ -452,13 +457,12 @@
         font-size: 14px;
     }
 
-    /* Адаптив для ProgressBar контейнера */
     .bar__playerProgress {
         height: 3px;
     }
 }
 
-/* Адаптив для очень маленьких экранов (375px) */
+/* Для очень маленьких экранов (375px) */
 @media (max-width: 375px) {
     .volume__progress {
         width: 60px;
@@ -485,8 +489,16 @@
         font-size: 12px;
     }
 
-    /* Адаптив для ProgressBar контейнера */
     .bar__playerProgress {
         height: 2px;
+    }
+}
+
+/* Для планшетов (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .bar {
+        width: calc(100% - 350px);
+        /* ШИРИНА САЙДБАРА ДЛЯ ПЛАНШЕТОВ */
+        margin-right: 350px;
     }
 }
