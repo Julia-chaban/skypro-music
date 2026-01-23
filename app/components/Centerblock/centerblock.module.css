@@ -6,7 +6,6 @@
     /* ИСПРАВЛЕНО: отступ слева 283px как в оригинале */
     padding: 20px 40px 20px 283px;
     /* Ширина centerblock: 1136px как в оригинале */
-    width: 1136px;
     box-sizing: border-box;
 }
 

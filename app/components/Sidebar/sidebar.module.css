@@ -1,3 +1,4 @@
+/* Сайдбар - всегда справа на декстопе, скрывается на мобильных */
 .main__sidebar {
     max-width: 418px;
     padding: 20px 90px 20px 78px;
@@ -7,7 +8,8 @@
     position: fixed;
     right: 0;
     top: 0;
-    z-index: 999;
+    z-index: 100;
+    /* Уменьшили с 999 до 100 */
     transition: transform 0.3s ease;
     overflow-y: auto;
     transform: translateX(0);
@@ -58,7 +60,6 @@
 
 .sidebar__block {
     height: 100%;
-    /* ИСПРАВЛЕНО: отступ сверху как в оригинале */
     padding: 240px 0 0 0;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -102,10 +103,12 @@
 
 .sidebar__img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
-/* МЕДИА-ЗАПРОСЫ НЕ ТРОГАЮ */
+/* МЕДИА-ЗАПРОСЫ */
 @media (max-width: 768px) {
     .main__sidebar {
         width: 280px;
@@ -128,6 +131,7 @@
     .sidebar__item {
         width: 200px;
         height: auto;
+        min-height: 120px;
     }
 
     .sidebar__item:not(:last-child) {
@@ -186,10 +190,13 @@
     }
 }
 
+/* ВАЖНО: На декстопе убираем position: relative, оставляем fixed! */
 @media (min-width: 1025px) {
     .main__sidebar {
-        position: relative;
-        transform: translateX(0) !important;
+        position: fixed;
+        /* Оставляем fixed, а не relative! */
+        transform: translateX(0);
+        z-index: 100;
     }
 }
 
@@ -206,7 +213,8 @@
         width: 100vw;
         height: calc(100vh - 80px);
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 998;
+        z-index: 99;
+        /* Ниже чем сайдбар (100) */
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;

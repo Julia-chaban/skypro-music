@@ -1,12 +1,23 @@
+/* Бар - снизу, на всю ширину контейнера */
 .bar {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: calc(100% - 418px);
-
-    margin-right: 418px;
+    width: 100%;
     background: rgba(28, 28, 28, 0.5);
-    z-index: 100;
+    z-index: 101;
+    /* Выше чем сайдбар (100) */
+    box-sizing: border-box;
+}
+
+/* Ключевое исправление для десктопа */
+@media (min-width: 1025px) {
+    .bar {
+        width: calc(100% - 418px);
+        /* Отнимаем ширину сайдбара */
+        left: 0;
+        right: auto;
+    }
 }
 
 .bar__content {
@@ -17,13 +28,6 @@
     -webkit-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-}
-
-.bar__playerProgress {
-    width: 100%;
-    height: 5px;
-    cursor: pointer;
-    position: relative;
 }
 
 .bar__playerBlock {
@@ -347,19 +351,24 @@
     cursor: pointer;
 }
 
-
 .active {
-    stroke: #ffffff !important;
+    stroke: #b672ff !important;
 }
 
-
+/* Медиа-запросы для бара */
+@media (max-width: 1024px) {
+    .bar {
+        width: 100%;
+        /* На мобильных и планшетах - вся ширина */
+    }
+}
 
 /* Для средних экранов (768px) */
 @media (max-width: 768px) {
     .bar {
+        position: fixed;
         width: 100%;
-        /* САЙДБАР СКРЫТ НА МОБИЛЬНЫХ */
-        margin-right: 0;
+        z-index: 101;
     }
 
     .bar__volumeBlock {
@@ -380,10 +389,6 @@
 
     .track__time {
         margin-left: 15px;
-    }
-
-    .bar__playerProgress {
-        height: 4px;
     }
 }
 
@@ -456,10 +461,6 @@
     .track__timeText {
         font-size: 14px;
     }
-
-    .bar__playerProgress {
-        height: 3px;
-    }
 }
 
 /* Для очень маленьких экранов (375px) */
@@ -487,18 +488,5 @@
 
     .track__timeText {
         font-size: 12px;
-    }
-
-    .bar__playerProgress {
-        height: 2px;
-    }
-}
-
-/* Для планшетов (769px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .bar {
-        width: calc(100% - 350px);
-        /* ШИРИНА САЙДБАРА ДЛЯ ПЛАНШЕТОВ */
-        margin-right: 350px;
     }
 }
