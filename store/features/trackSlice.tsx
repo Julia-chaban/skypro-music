@@ -12,9 +12,8 @@ type initialStateType = {
   isLooping: boolean;
   isShuffling: boolean;
   shuffledPlaylist: Track[];
-  // ДОБАВЛЯЕМ только это:
-  filteredPlaylist: Track[]; // Новое поле для фильтрованных треков
-  useFilteredPlaylist: boolean; // Флаг использования фильтрованного плейлиста
+  filteredPlaylist: Track[];
+  useFilteredPlaylist: boolean;
 };
 
 const initialState: initialStateType = {
@@ -28,7 +27,6 @@ const initialState: initialStateType = {
   isLooping: false,
   isShuffling: false,
   shuffledPlaylist: [],
-  // ДОБАВЛЯЕМ:
   filteredPlaylist: [],
   useFilteredPlaylist: false,
 };
@@ -43,7 +41,7 @@ const trackSlice = createSlice({
       state.isPlaying = true;
       state.currentTime = 0;
 
-      // ОПРЕДЕЛЯЕМ активный плейлист
+      // Определяем активный плейлист
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
         : state.playlist;
@@ -57,7 +55,6 @@ const trackSlice = createSlice({
         // Если трека нет в активном плейлисте, добавляем его как единственный
         state.playlist = [track];
         state.filteredPlaylist = [track];
-        // При создании нового плейлиста также создаем перемешанную версию
         state.shuffledPlaylist = [track];
         state.currentTrackIndex = 0;
       }
@@ -101,7 +98,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // ДОБАВЛЯЕМ новый action для установки фильтрованного плейлиста
     setFilteredPlaylist: (state, action: PayloadAction<Track[]>) => {
       state.filteredPlaylist = action.payload;
       state.useFilteredPlaylist = action.payload.length > 0;
@@ -134,7 +130,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // ДОБАВЛЯЕМ action для сброса фильтрации
     resetFilteredPlaylist: (state) => {
       state.useFilteredPlaylist = false;
 
@@ -200,15 +195,12 @@ const trackSlice = createSlice({
     },
 
     toggleLooping: (state) => {
-      // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ ЗАЦИКЛИВАНИЯ ТРЕКА
       state.isLooping = !state.isLooping;
-      console.log('Looping:', state.isLooping);
     },
 
     toggleShuffling: (state) => {
       const wasShuffling = state.isShuffling;
       state.isShuffling = !state.isShuffling;
-      console.log('Shuffling:', state.isShuffling);
 
       if (!wasShuffling && state.isShuffling) {
         // ВКЛЮЧЕНИЕ SHUFFLE - перемешиваем треки
@@ -252,7 +244,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // ФУНКЦИЯ ДЛЯ ПОВТОРНОГО ПЕРЕМЕШИВАНИЯ ТРЕКОВ
     reshufflePlaylist: (state) => {
       if (state.isShuffling) {
         const activePlaylist = state.useFilteredPlaylist
@@ -281,7 +272,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // СЛЕДУЮЩИЙ ТРЕК (работает с shuffle и loop)
     nextTrack: (state) => {
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
@@ -317,7 +307,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // ПРЕДЫДУЩИЙ ТРЕК (работает с shuffle и loop)
     prevTrack: (state) => {
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
@@ -370,7 +359,6 @@ const trackSlice = createSlice({
 export const {
   setCurrentTrack,
   setPlaylist,
-  // ДОБАВЛЯЕМ экспорт новых actions:
   setFilteredPlaylist,
   resetFilteredPlaylist,
   setIsPlaying,
@@ -381,7 +369,7 @@ export const {
   togglePlaying,
   toggleLooping,
   toggleShuffling,
-  reshufflePlaylist, // Экспортируем функцию для повторного перемешивания
+  reshufflePlaylist,
   nextTrack,
   prevTrack,
   setProgress,

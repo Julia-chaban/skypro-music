@@ -19,7 +19,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       if (!mobile) {
-        setIsMobileMenuOpen(false); // Закрываем мобильное меню на десктопе
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -31,14 +31,11 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
 
   const handleBurgerClick = () => {
     if (isMobile) {
-      // На мобильных: открываем/закрываем мобильное меню
       setIsMobileMenuOpen(!isMobileMenuOpen);
     } else {
-      // На десктопе: открываем/закрываем меню под бургером и Sidebar
       const newState = !isDesktopMenuOpen;
       setIsDesktopMenuOpen(newState);
 
-      // Управляем Sidebar
       if (onSidebarToggle) {
         onSidebarToggle(newState);
       }
@@ -49,7 +46,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
     setIsMobileMenuOpen(false);
     setIsDesktopMenuOpen(false);
 
-    // Закрываем Sidebar при клике на пункт меню
     if (onSidebarToggle) {
       onSidebarToggle(false);
     }
@@ -57,7 +53,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
 
   return (
     <nav className={styles.main__nav}>
-      {/* Логотип всегда сверху */}
       <div className={styles.nav__logo}>
         <Link href="/">
           <Image
@@ -71,7 +66,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         </Link>
       </div>
 
-      {/* Бургер всегда виден */}
       <div
         className={`${styles.nav__burger} ${isMobile ? (isMobileMenuOpen ? styles.active : '') : isDesktopMenuOpen ? styles.active : ''}`}
         onClick={handleBurgerClick}
@@ -84,7 +78,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         <span className={styles.burger__line}></span>
       </div>
 
-      {/* Десктопное меню (скрыто по умолчанию, открывается при клике на бургер) */}
       {!isMobile && (
         <div
           className={`${styles.nav__menu} ${isDesktopMenuOpen ? styles.active : ''}`}
@@ -121,7 +114,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         </div>
       )}
 
-      {/* Мобильное меню (только для мобильных) */}
       {isMobile && (
         <div
           className={`${styles.nav__mobile_menu} ${isMobileMenuOpen ? styles.active : ''}`}

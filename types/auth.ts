@@ -1,3 +1,33 @@
+export interface User {
+  email: string;
+  username: string;
+  _id: number;
+}
+
+export interface AuthResponse extends User {}
+
+export interface TokenResponse {
+  refresh: string;
+  access: string;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  username: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface ErrorResponse {
+  message: string;
+  detail?: string;
+  code?: string;
+  success?: boolean;
+}
 export interface Track {
   _id: number;
   name: string;
@@ -11,7 +41,6 @@ export interface Track {
   stared_user: number[];
 }
 
-// Интерфейс для подборки/селекции
 export interface Selection {
   _id: number;
   name: string;
@@ -20,7 +49,6 @@ export interface Selection {
   logo: string | null;
 }
 
-// Интерфейс для опций фильтрации
 export interface FilterOptions {
   author: string[];
   genre: string[];
@@ -57,7 +85,7 @@ export interface PaginatedResponse<T> {
   previous: string | null;
 }
 
-// 5. Интерфейс для состояния воспроизведения трека
+// 5. Интерфейс для воспроизведения трека
 export interface PlaybackState {
   isPlaying: boolean;
   currentTime: number;

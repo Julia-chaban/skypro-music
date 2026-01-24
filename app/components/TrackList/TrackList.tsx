@@ -1,69 +1,96 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import TrackItem from '@/components/TrackItem/TrackItem';
-import { Track } from '@/sharedTypes/types';
+import TrackItem from '@/app/components/TrackItem/TrackItem';
+import { Track } from '@/types/track';
 import styles from './TrackList.module.css';
 
-const TrackList: React.FC = () => {
+interface TrackListProps {
+  collectionId?: string | null;
+  tracks?: Track[];
+}
+
+const TrackList: React.FC<TrackListProps> = ({
+  collectionId,
+  tracks: propTracks,
+}) => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Если треки переданы из родителя (из подборки через Centerblock)
+    if (propTracks && propTracks.length > 0) {
+      setTracks(propTracks);
+      setLoading(false);
+      return;
+    }
+
+    // Если нет переданных треков, загружаем сами
     fetchTracks();
-  }, []);
+  }, [collectionId, propTracks]);
 
   const fetchTracks = async () => {
     try {
-      const response = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/',
-      );
+      setLoading(true);
+      setError(null);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Если передан collectionId, загружаем треки из подборки
+      if (collectionId) {
+        const response = await fetch(
+          `https://webdev-music-003b5b991590.herokuapp.com/catalog/selection/${collectionId}/`,
+        );
 
-      const data = await response.json();
-
-      // ДЕБАГ: проверяем структуру данных
-      console.log('=== ПОЛУЧЕННЫЕ ДАННЫЕ С API ===');
-      console.log('Всего треков:', data?.length);
-
-      if (data && data.length > 0) {
-        console.log('Первый трек:', data[0]);
-        console.log('Все ключи первого трека:', Object.keys(data[0]));
-        console.log('track_file первого трека:', data[0].track_file);
-        console.log('Тип track_file:', typeof data[0].track_file);
-
-        // Если track_file - объект, покажем его структуру
-        if (data[0].track_file && typeof data[0].track_file === 'object') {
-          console.log(
-            'Ключи объекта track_file:',
-            Object.keys(data[0].track_file),
-          );
-          console.log(
-            'Значение track_file:',
-            JSON.stringify(data[0].track_file, null, 2),
-          );
+        if (!response.ok) {
+          throw new Error('Не удалось загрузить подборку');
         }
-      }
 
-      setTracks(data);
+        const data = await response.json();
+        setTracks(data.tracks || []);
+      } else {
+        // Иначе загружаем все треки
+        const response = await fetch(
+          'https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/',
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setTracks(data);
+      }
     } catch (error) {
       console.error('Error fetching tracks:', error);
       setError('Не удалось загрузить треки');
+      setTracks([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRetry = () => {
+    fetchTracks();
+  };
+
   if (loading) {
-    return <div className={styles.loading}>Загрузка треков...</div>;
+    return (
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
+        <p>Загрузка треков...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className={styles.error}>{error}</div>;
+    return (
+      <div className={styles.error}>
+        <div>{error}</div>
+        <button onClick={handleRetry} className={styles.retryButton}>
+          Попробовать снова
+        </button>
+      </div>
+    );
   }
 
   if (tracks.length === 0) {

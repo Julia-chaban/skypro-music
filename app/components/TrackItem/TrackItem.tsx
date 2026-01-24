@@ -9,7 +9,7 @@ import {
   setCurrentTrackIndex,
 } from '@/store/features/trackSlice';
 import { Track } from '@/types/track';
-import { formatDuration } from '@/data/tracks';
+import { formatDuration } from '@/utils/formatDuration';
 import styles from './TrackItem.module.css';
 
 interface TrackItemProps {
@@ -51,34 +51,28 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
-            {/* Показываем ноту ТОЛЬКО если это НЕ текущий играющий трек */}
             {!isCurrentlyPlaying ? (
               <svg className={styles.track__titleSvg}>
                 <use xlinkHref="/icon/note.svg"></use>
               </svg>
             ) : (
-              /* Показываем пульсирующую точку ТОЛЬКО для текущего играющего трека */
               <div className={styles.track__titleImageDotPulsing} />
             )}
           </div>
           <div className={styles.track__titleText}>
-            <a className={styles.track__titleLink} href="">
+            <span className={styles.track__titleLink}>
               {track.name}
               <span className={styles.track__titleSpan}></span>
-            </a>
+            </span>
           </div>
         </div>
 
         <div className={styles.track__author}>
-          <a className={styles.track__authorLink} href="">
-            {track.author}
-          </a>
+          <span className={styles.track__authorLink}>{track.author}</span>
         </div>
 
         <div className={styles.track__album}>
-          <a className={styles.track__albumLink} href="">
-            {track.album}
-          </a>
+          <span className={styles.track__albumLink}>{track.album}</span>
         </div>
 
         <div className={styles.track__time}>

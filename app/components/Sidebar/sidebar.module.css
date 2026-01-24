@@ -225,3 +225,68 @@
         visibility: visible;
     }
 }
+
+/* components/Sidebar/sidebar.module.css дополнения */
+.selection__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 15px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar__link:hover .selection__overlay {
+    opacity: 1;
+}
+
+.selection__name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.selection__author {
+    display: block;
+    font-size: 12px;
+    color: #b672ff;
+}
+
+.sidebar__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #696969;
+}
+
+.loadingSpinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #b672ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.sidebar__error {
+    text-align: center;
+    color: #ff6b6b;
+    font-size: 14px;
+    padding: 20px;
+}

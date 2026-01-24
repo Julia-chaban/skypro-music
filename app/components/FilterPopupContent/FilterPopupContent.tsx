@@ -38,15 +38,15 @@ export default function FilterPopupContent({
     }
   };
 
-  const listClassName = isMobile
-    ? `${styles.filter__list}`
-    : styles.filter__list;
+  // Для мобильных устройств показываем не все элементы сразу
+  const displayItems = isMobile ? items.slice(0, 20) : items;
+  const hasMoreItems = items.length > displayItems.length;
 
   return (
     <div className={styles.filter__popupContent}>
       <h3 className={styles.filter__popupTitle}>{title}</h3>
-      <div className={listClassName} ref={listRef}>
-        {items.map((item, index) => {
+      <div className={styles.filter__list} ref={listRef}>
+        {displayItems.map((item, index) => {
           const isSelected = selectedItems.includes(item);
           const isLongName = item.length > 20;
           const itemClassName = isLongName
@@ -67,6 +67,11 @@ export default function FilterPopupContent({
             </div>
           );
         })}
+        {hasMoreItems && (
+          <div className={styles.moreItemsIndicator}>
+            ...и еще {items.length - displayItems.length}
+          </div>
+        )}
       </div>
     </div>
   );
