@@ -226,17 +226,15 @@ export default function Bar() {
         {/* ОДИН БАР - рендерится всегда */}
         <div className={styles.bar}>
           <div className={styles.bar__content}>
-            {/* Прогресс-бар с использованием компонента ProgressBar */}
-            <div className={styles.bar__playerProgress}>
-              {currentTrack && duration > 0 && (
-                <ProgressBar
-                  max={duration}
-                  value={currentTime}
-                  step={0.1}
-                  onChange={handleProgressChange}
-                />
-              )}
-            </div>
+            {/* Прогресс-бар с использованием компонента ProgressBar - БЕЗ ЛИШНЕЙ ОБЕРТКИ */}
+            {currentTrack && duration > 0 && (
+              <ProgressBar
+                max={duration}
+                value={currentTime}
+                step={0.1}
+                onChange={handleProgressChange}
+              />
+            )}
 
             <div className={styles.bar__playerBlock}>
               <div className={styles.bar__player}>

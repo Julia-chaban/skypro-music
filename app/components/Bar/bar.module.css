@@ -1,9 +1,12 @@
 .bar {
-    position: absolute;
+    position: fixed;
+    /* Изменил с absolute на fixed для правильного позиционирования */
     bottom: 0;
     left: 0;
     width: 100%;
     background: rgba(28, 28, 28, 0.5);
+    backdrop-filter: blur(10px);
+    /* Добавил размытие для красоты */
     z-index: 101;
     /* Выше чем сайдбар (100) */
     box-sizing: border-box;
@@ -28,6 +31,8 @@
     -ms-flex-direction: column;
     flex-direction: column;
 }
+
+/* СТИЛИ ДЛЯ .bar__playerProgress УДАЛЕНЫ - прогресс-бар теперь в компоненте ProgressBar */
 
 .bar__playerBlock {
     height: 73px;
@@ -93,6 +98,9 @@
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
+    cursor: pointer;
+    background: none;
+    border: none;
 }
 
 .player__btnPrev {
@@ -253,6 +261,9 @@
 .trackPlay__like,
 .trackPlay__dislike {
     padding: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
 }
 
 .trackPlay__likeSvg {

@@ -12,42 +12,60 @@ interface FilterProps {
   tracks?: Track[];
   selectedArtists?: string[];
   selectedGenres?: string[];
+  selectedYears?: string[];
   onArtistToggle?: (artist: string) => void;
   onGenreToggle?: (genre: string) => void;
+  onYearToggle?: (year: string) => void;
 }
 
 export default function Filter({
   tracks = [],
   selectedArtists = [],
   selectedGenres = [],
+  selectedYears = [],
   onArtistToggle,
   onGenreToggle,
+  onYearToggle,
 }: FilterProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
 
-  // Извлекаем уникальные данные для фильтров из API
+  console.log('Filter component received:', {
+    tracksCount: tracks.length,
+    selectedArtists,
+    selectedGenres,
+    selectedYears,
+  });
+
   const uniqueArtists = useMemo(() => {
     const artists = new Set<string>();
     tracks.forEach((track) => {
-      if (track.author) {
+      if (track.author && track.author.trim() !== '') {
         artists.add(track.author);
       }
     });
-    return Array.from(artists).sort();
+    const result = Array.from(artists).sort();
+    console.log('Unique artists:', result);
+    return result;
   }, [tracks]);
 
   const uniqueYears = useMemo(() => {
     const years = new Set<string>();
     tracks.forEach((track) => {
       if (track.release_date) {
-        // Извлекаем год из даты
-        const year = new Date(track.release_date).getFullYear();
-        if (!isNaN(year)) {
-          years.add(year.toString());
+        try {
+          const date = new Date(track.release_date);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear().toString();
+            years.add(year);
+          }
+        } catch (error) {
+          console.warn('Error parsing date:', track.release_date, error);
         }
       }
     });
-    return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+    const result = Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+    console.log('Unique years:', result);
+    return result;
   }, [tracks]);
 
   const uniqueGenres = useMemo(() => {
@@ -55,13 +73,15 @@ export default function Filter({
     tracks.forEach((track) => {
       if (track.genre && Array.isArray(track.genre)) {
         track.genre.forEach((g) => {
-          if (g && typeof g === 'string') {
+          if (g && typeof g === 'string' && g.trim() !== '') {
             genres.add(g);
           }
         });
       }
     });
-    return Array.from(genres).sort();
+    const result = Array.from(genres).sort();
+    console.log('Unique genres:', result);
+    return result;
   }, [tracks]);
 
   const handleFilterClick = (filterType: FilterType) => {
@@ -71,6 +91,7 @@ export default function Filter({
   return (
     <div className={styles.centerblock__filter}>
       <div className={styles.filter__title}>Искать по:</div>
+
       {uniqueArtists.length > 0 && (
         <FilterItem
           label="исполнителю"
@@ -91,24 +112,28 @@ export default function Filter({
           }
         />
       )}
+
       {uniqueYears.length > 0 && (
         <FilterItem
           label="году выпуска"
           filterType="year"
           isActive={activeFilter === 'year'}
           onClick={() => handleFilterClick('year')}
-          selectedCount={0}
+          selectedCount={selectedYears.length}
           popupContent={
             activeFilter === 'year' && (
               <FilterPopupContent
                 title="Год выпуска"
                 items={uniqueYears}
                 filterType="year"
+                selectedItems={selectedYears}
+                onItemToggle={onYearToggle}
               />
             )
           }
         />
       )}
+
       {uniqueGenres.length > 0 && (
         <FilterItem
           label="жанру"

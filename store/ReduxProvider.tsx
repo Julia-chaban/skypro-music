@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { Provider } from 'react-redux';
-import { makeStore, AppStore } from './features/store.tsx';
+import { makeStore, AppStore } from '@/store/features/store';
 
 export default function ReduxProvider({
   children,

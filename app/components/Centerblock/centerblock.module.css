@@ -4,9 +4,10 @@
     -ms-flex-positive: 3;
     flex-grow: 3;
     /* ИСПРАВЛЕНО: отступ слева 283px как в оригинале */
-    padding: 20px 40px 20px 283px;
+    padding: 20px 40px 20px 40px;
     /* Ширина centerblock: 1136px как в оригинале */
     box-sizing: border-box;
+    margin-right: 270px;
 }
 
 .centerblock__search {
@@ -327,7 +328,7 @@
 /* МЕДИА-ЗАПРОСЫ (не трогаю, только для мобильных) */
 @media (max-width: 1200px) {
     .centerblock {
-        padding: 20px 40px 20px 200px;
+        padding: 20px 40px 20px 40px;
         width: auto;
     }
 

@@ -1,4 +1,3 @@
-// app/collections/[id]/page.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -8,6 +7,7 @@ import '../../page.mobile.css';
 import Navigation from '../../components/Navigation/navigation';
 import Sidebar from '../../components/Sidebar/sidebar';
 import TrackItem from '../../components/TrackItem/TrackItem';
+import Bar from '../../components/Bar/bar';
 import { useState as useStateReact } from 'react';
 
 interface Selection {
@@ -150,6 +150,8 @@ export default function CollectionPage() {
         </main>
         <footer className="footer"></footer>
       </div>
+      {/* Bar добавлен вне .container */}
+      <Bar />
     </div>
   );
 }

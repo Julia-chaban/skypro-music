@@ -39,115 +39,132 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // Восстановление пользователя из localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const accessToken = localStorage.getItem('accessToken');
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const accessToken = localStorage.getItem('accessToken');
 
-    if (storedUser && accessToken) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('user');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+      console.log('Checking auth:', { storedUser, accessToken });
+
+      if (storedUser && accessToken) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          console.log('User restored from localStorage:', parsedUser);
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
       }
-    }
-    setIsCheckingAuth(false);
+      setIsCheckingAuth(false);
+    };
+
+    checkAuth();
   }, []);
 
-  // Защита маршрутов
   useEffect(() => {
     if (isCheckingAuth) return;
+
+    console.log('Auth check:', {
+      pathname,
+      isAuthenticated,
+      isCheckingAuth,
+    });
 
     const publicRoutes = ['/auth/signin', '/auth/signup'];
     const isPublicRoute = publicRoutes.includes(pathname);
 
+    if (isCheckingAuth) return;
+
     if (!isAuthenticated && !isPublicRoute) {
-      const timer = setTimeout(() => {
-        router.push('/auth/signin');
-      }, 0);
-      return () => clearTimeout(timer);
+      console.log('Redirecting to signin - not authenticated');
+      router.push('/auth/signin');
+      return;
     }
 
     if (isAuthenticated && isPublicRoute) {
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, 0);
-      return () => clearTimeout(timer);
+      console.log('Redirecting to home - already authenticated');
+      router.push('/');
+      return;
     }
   }, [pathname, isAuthenticated, isCheckingAuth, router]);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      console.log('Login attempt:', { email });
 
-      // Формат данных для входа
       const loginData = {
         email: email.trim(),
         password: password.trim(),
       };
 
-      // 1. Логиним пользователя
-      const loginResponse = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/user/login/',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify(loginData),
-        },
-      );
-
-      if (!loginResponse.ok) {
-        const errorText = await loginResponse.text();
-        console.error('Login error response:', errorText);
-
-        if (loginResponse.status === 400 || loginResponse.status === 412) {
-          throw new Error('Некорректный формат данных');
-        } else if (loginResponse.status === 401) {
-          throw new Error('Неверный email или пароль');
-        } else {
-          throw new Error(`Ошибка сервера: ${loginResponse.status}`);
-        }
-      }
-
-      const userData = await loginResponse.json();
-      console.log('Login success:', userData);
-
-      // 2. Получаем токены
       const tokenResponse = await fetch(
         'https://webdev-music-003b5b991590.herokuapp.com/user/token/',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
           },
           body: JSON.stringify(loginData),
         },
       );
 
+      console.log('Token response status:', tokenResponse.status);
+
       if (!tokenResponse.ok) {
-        throw new Error('Ошибка при получении токена');
+        let errorMessage = 'Неверный email или пароль';
+        try {
+          const errorData = await tokenResponse.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch {}
+        throw new Error(errorMessage);
       }
 
       const tokens = await tokenResponse.json();
+      console.log('Tokens received:', tokens);
 
-      // 3. Сохраняем данные
+      if (!tokens.access || !tokens.refresh) {
+        throw new Error('Неверный формат ответа от сервера');
+      }
+
+      const userResponse = await fetch(
+        'https://webdev-music-003b5b991590.herokuapp.com/user/login/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData),
+        },
+      );
+
+      let userData;
+      if (userResponse.ok) {
+        userData = await userResponse.json();
+      } else {
+        userData = {
+          email: email,
+          username: email.split('@')[0],
+          _id: Date.now(),
+        };
+      }
+
+      console.log('User data:', userData);
+
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
       localStorage.setItem('user', JSON.stringify(userData));
 
       setUser(userData);
 
-      // 4. Редирект на главную
+      console.log('Login successful, redirecting to /');
       router.push('/');
       router.refresh();
     } catch (error: any) {
-      console.error('Ошибка авторизации:', error);
+      console.error('Login error:', error);
       throw new Error(error.message || 'Произошла ошибка при авторизации');
     } finally {
       setIsLoading(false);
@@ -157,15 +174,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (email: string, password: string, username: string) => {
     try {
       setIsLoading(true);
+      console.log('Signup attempt:', { email, username });
 
-      // Формат данных для регистрации согласно API
       const signupData = {
         email: email.trim(),
         password: password.trim(),
         username: username.trim(),
       };
-
-      console.log('Sending signup data:', signupData);
 
       const response = await fetch(
         'https://webdev-music-003b5b991590.herokuapp.com/user/signup/',
@@ -173,35 +188,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
           },
           body: JSON.stringify(signupData),
         },
       );
 
-      const responseText = await response.text();
-      console.log('Signup response:', response.status, responseText);
+      console.log('Signup response status:', response.status);
 
       if (!response.ok) {
         let errorMessage = 'Ошибка при регистрации';
         try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          errorMessage = responseText || errorMessage;
-        }
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.detail || errorMessage;
+        } catch {}
         throw new Error(errorMessage);
       }
 
-      // Парсим успешный ответ
-      const data = JSON.parse(responseText);
-      console.log('Registration successful:', data);
-
-      // После успешной регистрации редирект на страницу входа
-      router.push('/auth/signin');
-      router.refresh();
+      await login(email, password);
     } catch (error: any) {
-      console.error('Ошибка регистрации:', error);
+      console.error('Signup error:', error);
       throw new Error(error.message || 'Произошла ошибка при регистрации');
     } finally {
       setIsLoading(false);
@@ -209,6 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('Logging out');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
