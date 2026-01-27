@@ -61,7 +61,9 @@ export default function Bar() {
 
     const handleEnded = () => {
       // АВТОМАТИЧЕСКИЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
-      dispatch(nextTrack());
+      if (!isLooping) {
+        dispatch(nextTrack());
+      }
     };
 
     const handleError = () => {
@@ -80,7 +82,7 @@ export default function Bar() {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [dispatch]);
+  }, [dispatch, isLooping]);
 
   // Установка трека и управление воспроизведением
   useEffect(() => {
@@ -154,8 +156,22 @@ export default function Bar() {
   // Обработчики с useCallback для стабильности
   const handlePlayClick = useCallback(() => {
     if (!currentTrack) return;
-    dispatch(togglePlaying());
-  }, [currentTrack, dispatch]);
+    const audio = audioRef.current;
+
+    if (audio) {
+      if (isPlaying) {
+        // Если трек играет, ставим на паузу
+        audio.pause();
+        dispatch(setIsPlaying(false));
+      } else {
+        // Если трек на паузе, продолжаем воспроизведение
+        audio.play().catch((error) => {
+          console.error('Ошибка воспроизведения:', error);
+        });
+        dispatch(setIsPlaying(true));
+      }
+    }
+  }, [currentTrack, isPlaying, dispatch]);
 
   const handleNextClick = useCallback(() => {
     // РУЧНОЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
@@ -216,7 +232,16 @@ export default function Bar() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }, []);
 
-  // Мемоизация JSX - ВЕРСТКА НЕ ИЗМЕНЕНА, ТОЛЬКО ОБРАБОТЧИКИ ДОБАВЛЕНЫ
+  // Определяем цвет иконок в зависимости от состояния
+  const getRepeatIconColor = useCallback(() => {
+    return isLooping ? '#ffffff' : '#696969';
+  }, [isLooping]);
+
+  const getShuffleIconColor = useCallback(() => {
+    return isShuffling ? '#ffffff' : '#696969';
+  }, [isShuffling]);
+
+  // Мемоизация JSX
   const barContent = useMemo(
     () => (
       <>
@@ -281,19 +306,31 @@ export default function Bar() {
                   </div>
                   {/* КНОПКА ПОВТОРА (ЗАЦИКЛИВАНИЕ) */}
                   <div
-                    className={`${styles.player__btnRepeat} ${styles.btnIcon} ${isLooping ? styles.active : ''}`}
+                    className={`${styles.player__btnRepeat} ${styles.btnIcon}`}
                     onClick={currentTrack ? handleRepeatClick : undefined}
                   >
-                    <svg className={styles.player__btnRepeatSvg}>
+                    <svg
+                      className={styles.player__btnRepeatSvg}
+                      style={{
+                        stroke: getRepeatIconColor(),
+                        fill: isLooping ? '#ffffff' : 'transparent',
+                      }}
+                    >
                       <use xlinkHref="/icon/repeat.svg"></use>
                     </svg>
                   </div>
                   {/* КНОПКА ПЕРЕМЕШИВАНИЯ (SHUFFLE) */}
                   <div
-                    className={`${styles.player__btnShuffle} ${styles.btnIcon} ${isShuffling ? styles.active : ''}`}
+                    className={`${styles.player__btnShuffle} ${styles.btnIcon}`}
                     onClick={currentTrack ? handleShuffleClick : undefined}
                   >
-                    <svg className={styles.player__btnShuffleSvg}>
+                    <svg
+                      className={styles.player__btnShuffleSvg}
+                      style={{
+                        stroke: getShuffleIconColor(),
+                        fill: isShuffling ? '#ffffff' : 'transparent',
+                      }}
+                    >
                       <use xlinkHref="/icon/shuffle.svg"></use>
                     </svg>
                   </div>
@@ -381,6 +418,8 @@ export default function Bar() {
       isShuffling,
       isLiked,
       isDisliked,
+      getRepeatIconColor,
+      getShuffleIconColor,
       handlePrevClick,
       handlePlayClick,
       handleNextClick,
