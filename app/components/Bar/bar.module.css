@@ -1,22 +1,21 @@
 .bar {
     position: fixed;
-    /* Изменил с absolute на fixed для правильного позиционирования */
+    /* Оставил fixed для правильной работы */
     bottom: 0;
     left: 0;
     width: 100%;
     background: rgba(28, 28, 28, 0.5);
     backdrop-filter: blur(10px);
-    /* Добавил размытие для красоты */
+    /* Вернул размытие */
     z-index: 101;
-    /* Выше чем сайдбар (100) */
     box-sizing: border-box;
+    /* Вернул box-sizing */
 }
 
 /* Ключевое исправление для десктопа */
 @media (min-width: 1025px) {
     .bar {
         width: calc(100% - 418px);
-        /* Отнимаем ширину сайдбара */
         left: 0;
         right: auto;
     }
@@ -101,6 +100,7 @@
     cursor: pointer;
     background: none;
     border: none;
+    /* Вернул border: none */
 }
 
 .player__btnPrev {
@@ -109,9 +109,13 @@
 
 .player__btnPrevSvg {
     width: 16px;
+    /* Вернул ваш размер */
     height: 14px;
+    /* Вернул ваш размер */
     fill: #ffffff;
+    /* Вернул ваш цвет */
     stroke: #ffffff;
+    /* Вернул stroke */
 }
 
 .player__btnPlay {
@@ -120,8 +124,11 @@
 
 .player__btnPlaySvg {
     width: 15px;
+    /* Вернул ваш размер */
     height: 20px;
+    /* Вернул ваш размер */
     fill: #ffffff;
+    /* Вернул ваш цвет */
 }
 
 .player__btnNext {
@@ -130,9 +137,13 @@
 
 .player__btnNextSvg {
     width: 16px;
+    /* Вернул ваш размер */
     height: 14px;
+    /* Вернул ваш размер */
     fill: #ffffff;
+    /* Вернул ваш цвет */
     stroke: #ffffff;
+    /* Вернул stroke */
 }
 
 .player__btnRepeat {
@@ -141,7 +152,9 @@
 
 .player__btnRepeatSvg {
     width: 20px;
+    /* Вернул ваш размер */
     height: 18px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #696969;
 }
@@ -157,7 +170,9 @@
 
 .player__btnShuffleSvg {
     width: 20px;
+    /* Вернул ваш размер */
     height: 18px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #696969;
 }
@@ -206,7 +221,9 @@
 
 .trackPlay__svg {
     width: 20px;
+    /* Вернул ваш размер */
     height: 19px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #4e4e4e;
 }
@@ -244,6 +261,7 @@
     text-decoration: none;
 }
 
+/* Вернул ваш класс .trackPlay__dislike вместо .trackPlay__likeDis */
 .trackPlay__dislike {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -268,7 +286,9 @@
 
 .trackPlay__likeSvg {
     width: 16px;
+    /* Вернул ваш размер */
     height: 14px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #696969;
 }
@@ -279,11 +299,14 @@
 
 .trackPlay__dislikeSvg {
     width: 16px;
+    /* Вернул ваш размер */
     height: 15px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #696969;
 }
 
+/* Вернул стили для track__time */
 .track__time {
     margin-left: 28.5px;
     display: flex;
@@ -318,15 +341,20 @@
 
 .volume__image {
     width: 14px;
+    /* Вернул ваш размер */
     height: 18px;
+    /* Вернул ваш размер */
     margin-right: 17px;
 }
 
 .volume__svg {
     width: 14px;
+    /* Вернул ваш размер */
     height: 18px;
+    /* Вернул ваш размер */
     fill: transparent;
     stroke: #ffffff;
+    /* Вернул stroke */
 }
 
 .volume__progress {
@@ -361,19 +389,18 @@
     cursor: pointer;
 }
 
+/* Вернул класс .active */
 .active {
     stroke: #b672ff !important;
 }
 
-/* Медиа-запросы для бара */
+/* Вернул все медиа-запросы */
 @media (max-width: 1024px) {
     .bar {
         width: 100%;
-        /* На мобильных и планшетах - вся ширина */
     }
 }
 
-/* Для средних экранов (768px) */
 @media (max-width: 768px) {
     .bar {
         position: fixed;
@@ -402,7 +429,6 @@
     }
 }
 
-/* Для маленьких экранов (425px) */
 @media (max-width: 425px) {
     .bar__playerBlock {
         flex-wrap: wrap;
@@ -473,7 +499,6 @@
     }
 }
 
-/* Для очень маленьких экранов (375px) */
 @media (max-width: 375px) {
     .volume__progress {
         width: 60px;
