@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './sidebar.module.css';
 import { useAuth } from '@/app/context/AuthContext';
-import { Selection } from '@/types/track';
+import { Selection, SelectionsListResponse } from '@/types/track';
+import { fetchApi } from '@/utils/api';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -24,7 +25,6 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -40,21 +40,17 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
     fetchSelections();
   }, []);
 
-  const fetchSelections = async () => {
+  const fetchSelections = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/catalog/selection/all/',
+      setError(null);
+
+      const data = await fetchApi<SelectionsListResponse>(
+        '/catalog/selection/all',
       );
+      console.log('📦 Selections API response:', data);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Обработка ответа от API
-      let selectionsData: Selection[] = [];
+      let selectionsData: any[] = [];
 
       if (Array.isArray(data)) {
         selectionsData = data;
@@ -70,65 +66,54 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
         } else {
           const arrayValues = Object.values(data).filter(Array.isArray);
           if (arrayValues.length > 0) {
-            selectionsData = arrayValues[0] as Selection[];
+            selectionsData = arrayValues[0];
           }
         }
       }
 
-      // Если нет данных, используем демо-подборки
-      if (!selectionsData || selectionsData.length === 0) {
-        throw new Error('Нет данных о подборках');
+      console.log('✅ Raw selections data:', selectionsData);
+
+      if (selectionsData && selectionsData.length > 0) {
+        const uniqueSelections = selectionsData
+          .slice(0, 3)
+          .map((item, index) => {
+            const id = item._id || item.id || `selection-${index + 1}`;
+            const name = item.name || item.title || `Подборка ${index + 1}`;
+            const author = item.author || 'Музыкальный сервис';
+            const tracks = item.tracks || [];
+            const logo = item.logo || getDefaultImage(index);
+
+            return {
+              _id: String(id),
+              name,
+              author,
+              tracks,
+              logo,
+            } as Selection;
+          });
+
+        console.log('🎯 Formatted selections (первые 3):', uniqueSelections);
+        setSelections(uniqueSelections);
+      } else {
+        console.log('ℹ️ API вернул пустой список подборок');
+        setSelections([]);
       }
-
-      // Берем первые 3 подборки
-      const limitedSelections = selectionsData.slice(0, 3);
-
-      // Форматируем данные
-      const formattedSelections = limitedSelections.map((selection: any) => ({
-        _id: selection._id || selection.id || Math.random(),
-        name: selection.name || selection.title || 'Подборка',
-        author:
-          selection.author ||
-          selection.owner?.username ||
-          selection.owner?.name ||
-          'Музыкальный сервис',
-        tracks: selection.tracks || selection.track_list || [],
-        logo:
-          selection.logo || selection.image || selection.cover_image || null,
-      }));
-
-      setSelections(formattedSelections);
-      setError(null);
-    } catch (error) {
-      console.error('Error fetching selections:', error);
+    } catch (error: any) {
+      console.error('❌ Error fetching selections:', error);
       setError('Не удалось загрузить подборки');
-      // Используем демо-подборки
-      setSelections([
-        {
-          _id: 1,
-          name: 'Плейлист дня',
-          author: 'Музыкальный сервис',
-          tracks: [],
-          logo: '/img/playlist01.png',
-        },
-        {
-          _id: 2,
-          name: '100 танцевальных хитов',
-          author: 'Музыкальный сервис',
-          tracks: [],
-          logo: '/img/playlist02.png',
-        },
-        {
-          _id: 3,
-          name: 'Инди-заряд',
-          author: 'Музыкальный сервис',
-          tracks: [],
-          logo: '/img/playlist03.png',
-        },
-      ]);
+      setSelections([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDefaultImage = (index: number): string => {
+    const defaultImages = [
+      '/img/playlist01.png',
+      '/img/playlist02.png',
+      '/img/playlist03.png',
+    ];
+    return defaultImages[index] || '/img/playlist01.png';
   };
 
   const handleOverlayClick = () => {
@@ -137,6 +122,15 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleSelectionClick = (selection: Selection) => {
+    console.log('🎯 Клик по подборке в сайдбаре:', {
+      id: selection._id,
+      name: selection.name,
+      tracksCount: selection.tracks?.length || 0,
+    });
+    setIsVisible(false);
   };
 
   return (
@@ -165,9 +159,28 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
           {loading ? (
             <div className={styles.sidebar__loading}>
               <div className={styles.loadingSpinner}></div>
+              <p>Загрузка подборок...</p>
             </div>
           ) : error ? (
-            <div className={styles.sidebar__error}>{error}</div>
+            <div className={styles.sidebar__error}>
+              <p>{error}</p>
+              <button
+                onClick={() => fetchSelections()}
+                className={styles.retryButton}
+              >
+                Повторить
+              </button>
+            </div>
+          ) : selections.length === 0 ? (
+            <div className={styles.sidebar__empty}>
+              <p>Подборок пока нет</p>
+              <button
+                onClick={() => fetchSelections()}
+                className={styles.retryButton}
+              >
+                Обновить
+              </button>
+            </div>
           ) : (
             <div className={styles.sidebar__list}>
               {selections.map((selection) => (
@@ -175,25 +188,19 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                   <Link
                     className={styles.sidebar__link}
                     href={`/?collection=${selection._id}`}
-                    onClick={() => setIsVisible(false)}
+                    onClick={() => handleSelectionClick(selection)}
                   >
                     <img
                       className={styles.sidebar__img}
-                      src={selection.logo || '/img/playlist-default.png'}
+                      src={selection.logo}
                       alt={selection.name}
                       width={250}
                       height={150}
                       onError={(e) => {
-                        const defaultImages = [
-                          '/img/playlist01.png',
-                          '/img/playlist02.png',
-                          '/img/playlist03.png',
-                        ];
                         const index = selections.findIndex(
                           (s) => s._id === selection._id,
                         );
-                        e.currentTarget.src =
-                          defaultImages[index] || '/img/playlist-default.png';
+                        e.currentTarget.src = getDefaultImage(index);
                       }}
                     />
                     <div className={styles.selection__overlay}>

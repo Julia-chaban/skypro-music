@@ -20,6 +20,27 @@ export interface Selection {
   logo: string | null;
 }
 
+// ЯВНАЯ ТИПИЗАЦИЯ ДЛЯ RESPONSE API ПОДБОРОК
+export interface SelectionResponse extends Selection {}
+
+export interface SelectionsListResponse {
+  data?: Selection[];
+  selections?: Selection[];
+  results?: Selection[];
+  items?: Selection[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export interface TracksListResponse {
+  data?: Track[];
+  tracks?: Track[];
+  results?: Track[];
+  items?: Track[];
+  count?: number;
+}
+
 // Интерфейс для опций фильтрации
 export interface FilterOptions {
   author: string[];

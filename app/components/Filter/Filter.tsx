@@ -1,3 +1,4 @@
+// app/components/Filter/Filter.tsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -29,13 +30,6 @@ export default function Filter({
 }: FilterProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
 
-  console.log('Filter component received:', {
-    tracksCount: tracks.length,
-    selectedArtists,
-    selectedGenres,
-    selectedYears,
-  });
-
   const uniqueArtists = useMemo(() => {
     const artists = new Set<string>();
     tracks.forEach((track) => {
@@ -43,9 +37,7 @@ export default function Filter({
         artists.add(track.author);
       }
     });
-    const result = Array.from(artists).sort();
-    console.log('Unique artists:', result);
-    return result;
+    return Array.from(artists).sort();
   }, [tracks]);
 
   const uniqueYears = useMemo(() => {
@@ -59,13 +51,11 @@ export default function Filter({
             years.add(year);
           }
         } catch (error) {
-          console.warn('Error parsing date:', track.release_date, error);
+          // Игнорируем ошибки парсинга даты
         }
       }
     });
-    const result = Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
-    console.log('Unique years:', result);
-    return result;
+    return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
   }, [tracks]);
 
   const uniqueGenres = useMemo(() => {
@@ -79,9 +69,7 @@ export default function Filter({
         });
       }
     });
-    const result = Array.from(genres).sort();
-    console.log('Unique genres:', result);
-    return result;
+    return Array.from(genres).sort();
   }, [tracks]);
 
   const handleFilterClick = (filterType: FilterType) => {
