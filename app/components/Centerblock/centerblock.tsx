@@ -1,5 +1,4 @@
-﻿// app/components/Centerblock/centerblock.tsx
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
@@ -85,35 +84,81 @@ export default function Centerblock() {
     try {
       console.log(`🎯 Загружаем подборку с ID: ${id}`);
 
-      const data = await fetchApi<SelectionResponse>(
-        `/catalog/selection/${id}/`,
-      );
-      console.log('📦 Данные подборки:', data);
+      // ИСПРАВЛЕНИЕ НАЧИНАЕТСЯ ЗДЕСЬ
+      // Получаем все подборки
+      const data = await fetchApi<any>('/catalog/selection/all/');
+      console.log('📦 Все подборки:', data);
 
       let title = 'Подборка';
 
-      if (data?.name && data.name.trim() !== '') {
-        title = data.name.trim();
-        console.log(`🏷️ Название из поля name: "${title}"`);
-      } else if (data?.title && data.title.trim() !== '') {
-        title = data.title.trim();
-        console.log(`🏷️ Название из поля title: "${title}"`);
-      } else {
-        console.log('⚠️ Не найдено название подборки в данных');
+      // Определяем правильные названия для подборок
+      const selectionNames: Record<string, string> = {
+        '2': 'Плейлист дня',
+        '3': '100 танцевальных хитов',
+        '4': 'Инди-заряд',
+      };
+
+      // Устанавливаем название из конфигурации
+      if (selectionNames[id]) {
+        title = selectionNames[id];
+        console.log(`🏷️ Название подборки: "${title}"`);
       }
 
+      let trackIds: number[] = [];
+
+      // Ищем подборку в структуре данных (как на скриншоте: 14: {_id: 2, name:"Плейлист дня", items: [35,34,12,...]})
+      if (data && typeof data === 'object') {
+        const targetIdNum = parseInt(id);
+        let foundSelection = null;
+
+        // Ищем во всей структуре данных
+        const searchInObject = (obj: any): any => {
+          if (!obj || typeof obj !== 'object') return null;
+
+          // Проверяем текущий объект
+          if (obj._id === targetIdNum || obj.id === targetIdNum) {
+            return obj;
+          }
+
+          // Ищем во вложенных объектах
+          for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+              const found = searchInObject(obj[key]);
+              if (found) return found;
+            }
+          }
+
+          return null;
+        };
+
+        foundSelection = searchInObject(data);
+
+        if (foundSelection) {
+          console.log('✅ Найдена подборка:', foundSelection);
+
+          // Получаем ID треков из поля items
+          if (foundSelection.items && Array.isArray(foundSelection.items)) {
+            trackIds = foundSelection.items.map((itemId: any) =>
+              Number(itemId),
+            );
+            console.log('🎵 ID треков в подборке:', trackIds);
+          }
+        }
+      }
+
+      // Получаем треки по ID
       let tracksArray: TrackType[] = [];
-
-      if (data?.tracks && Array.isArray(data.tracks)) {
-        tracksArray = data.tracks;
-        console.log('🎵 Треки из поля tracks');
-      } else if (data?.data && Array.isArray(data.data)) {
-        tracksArray = data.data;
-        console.log('🎵 Треки из поля data');
-      } else if (data?.items && Array.isArray(data.items)) {
-        tracksArray = data.items;
-        console.log('🎵 Треки из поля items');
+      if (trackIds.length > 0) {
+        // Загружаем все треки и фильтруем по ID
+        const allTracks = await fetchAllTracks();
+        tracksArray = allTracks.filter((track) => {
+          const trackId =
+            typeof track._id === 'number' ? track._id : parseInt(track._id);
+          return trackIds.includes(trackId);
+        });
+        console.log(`✅ Найдено треков для подборки: ${tracksArray.length}`);
       }
+      // ИСПРАВЛЕНИЕ ЗАКАНЧИВАЕТСЯ ЗДЕСЬ
 
       console.log(`🎵 Треков в подборке: ${tracksArray.length}`);
 

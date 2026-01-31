@@ -40,80 +40,123 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
     fetchSelections();
   }, []);
 
+  // Конфигурация подборок с правильными ID и названиями
+  const SELECTIONS_CONFIG = [
+    { id: '2', name: 'Плейлист дня', defaultImage: '/img/playlist01.png' },
+    {
+      id: '3',
+      name: '100 танцевальных хитов',
+      defaultImage: '/img/playlist02.png',
+    },
+    { id: '4', name: 'Инди-заряд', defaultImage: '/img/playlist03.png' },
+  ];
+
   const fetchSelections = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
+      console.log('🔄 Загружаем подборки...');
       const data = await fetchApi<SelectionsListResponse>(
         '/catalog/selection/all',
       );
       console.log('📦 Selections API response:', data);
 
-      let selectionsData: any[] = [];
+      // Создаем массив для подборок
+      const formattedSelections: Selection[] = [];
 
-      if (Array.isArray(data)) {
-        selectionsData = data;
-      } else if (data && typeof data === 'object') {
-        if (Array.isArray(data.selections)) {
-          selectionsData = data.selections;
-        } else if (Array.isArray(data.data)) {
-          selectionsData = data.data;
-        } else if (Array.isArray(data.results)) {
-          selectionsData = data.results;
-        } else if (Array.isArray(data.items)) {
-          selectionsData = data.items;
-        } else {
-          const arrayValues = Object.values(data).filter(Array.isArray);
-          if (arrayValues.length > 0) {
-            selectionsData = arrayValues[0];
+      // Проходим по конфигурации и ищем подборки по ID
+      SELECTIONS_CONFIG.forEach((config, index) => {
+        try {
+          let selectionData = null;
+
+          // Ищем подборку в данных API
+          if (data && typeof data === 'object') {
+            // Если это объект с вложенными объектами (как на скриншоте)
+            const allValues = Object.values(data);
+
+            for (const value of allValues) {
+              if (value && typeof value === 'object') {
+                // Ищем объект с нужным ID
+                const foundItem = Object.values(value).find((item: any) => {
+                  if (!item || typeof item !== 'object') return false;
+
+                  const itemId = item._id || item.id;
+                  return String(itemId) === config.id;
+                });
+
+                if (foundItem) {
+                  selectionData = foundItem;
+                  break;
+                }
+              }
+            }
           }
-        }
-      }
 
-      console.log('✅ Raw selections data:', selectionsData);
+          // Если нашли подборку, используем ее данные
+          if (selectionData) {
+            console.log(`✅ Найдена подборка ${config.id}:`, selectionData);
 
-      if (selectionsData && selectionsData.length > 0) {
-        const uniqueSelections = selectionsData
-          .slice(0, 3)
-          .map((item, index) => {
-            const id = item._id || item.id || `selection-${index + 1}`;
-            const name = item.name || item.title || `Подборка ${index + 1}`;
-            const author = item.author || 'Музыкальный сервис';
-            const tracks = item.tracks || [];
-            const logo = item.logo || getDefaultImage(index);
+            const author =
+              selectionData.author ||
+              selectionData.owner ||
+              'Музыкальный сервис';
+            const tracks = selectionData.tracks || selectionData.items || [];
+            const logo =
+              selectionData.logo || selectionData.image || config.defaultImage;
 
-            return {
-              _id: String(id),
-              name,
-              author,
-              tracks,
-              logo,
-            } as Selection;
+            formattedSelections.push({
+              _id: config.id,
+              name: config.name, // Используем правильное название из конфигурации
+              author: String(author),
+              tracks: Array.isArray(tracks) ? tracks : [],
+              logo: String(logo),
+            });
+          } else {
+            // Если не нашли в API, создаем заглушку
+            console.log(
+              `⚠️ Подборка ${config.id} не найдена в API, создаем заглушку`,
+            );
+            formattedSelections.push({
+              _id: config.id,
+              name: config.name,
+              author: 'Музыкальный сервис',
+              tracks: [],
+              logo: config.defaultImage,
+            });
+          }
+        } catch (error) {
+          console.warn(`⚠️ Ошибка при обработке подборки ${config.id}:`, error);
+          // Создаем заглушку в случае ошибки
+          formattedSelections.push({
+            _id: config.id,
+            name: config.name,
+            author: 'Музыкальный сервис',
+            tracks: [],
+            logo: config.defaultImage,
           });
+        }
+      });
 
-        console.log('🎯 Formatted selections (первые 3):', uniqueSelections);
-        setSelections(uniqueSelections);
-      } else {
-        console.log('ℹ️ API вернул пустой список подборок');
-        setSelections([]);
-      }
+      console.log('🎯 Formatted selections:', formattedSelections);
+      setSelections(formattedSelections);
     } catch (error: any) {
       console.error('❌ Error fetching selections:', error);
-      setError('Не удалось загрузить подборки');
-      setSelections([]);
+
+      // Создаем заглушки при ошибке загрузки API
+      const fallbackSelections = SELECTIONS_CONFIG.map((config, index) => ({
+        _id: config.id,
+        name: config.name,
+        author: 'Музыкальный сервис',
+        tracks: [],
+        logo: config.defaultImage,
+      }));
+
+      setSelections(fallbackSelections);
+      setError('Не удалось загрузить подборки. Используем стандартные.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getDefaultImage = (index: number): string => {
-    const defaultImages = [
-      '/img/playlist01.png',
-      '/img/playlist02.png',
-      '/img/playlist03.png',
-    ];
-    return defaultImages[index] || '/img/playlist01.png';
   };
 
   const handleOverlayClick = () => {
@@ -130,7 +173,10 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
       name: selection.name,
       tracksCount: selection.tracks?.length || 0,
     });
-    setIsVisible(false);
+    // Закрываем меню на мобильных устройствах
+    if (isMobile) {
+      setIsVisible(false);
+    }
   };
 
   return (
@@ -171,16 +217,6 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                 Повторить
               </button>
             </div>
-          ) : selections.length === 0 ? (
-            <div className={styles.sidebar__empty}>
-              <p>Подборок пока нет</p>
-              <button
-                onClick={() => fetchSelections()}
-                className={styles.retryButton}
-              >
-                Обновить
-              </button>
-            </div>
           ) : (
             <div className={styles.sidebar__list}>
               {selections.map((selection) => (
@@ -190,26 +226,34 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                     href={`/?collection=${selection._id}`}
                     onClick={() => handleSelectionClick(selection)}
                   >
-                    <img
-                      className={styles.sidebar__img}
-                      src={selection.logo}
-                      alt={selection.name}
-                      width={250}
-                      height={150}
-                      onError={(e) => {
-                        const index = selections.findIndex(
-                          (s) => s._id === selection._id,
-                        );
-                        e.currentTarget.src = getDefaultImage(index);
-                      }}
-                    />
-                    <div className={styles.selection__overlay}>
-                      <span className={styles.selection__name}>
-                        {selection.name}
-                      </span>
-                      <span className={styles.selection__author}>
-                        {selection.author}
-                      </span>
+                    <div className={styles.sidebar__imageContainer}>
+                      <img
+                        className={styles.sidebar__img}
+                        src={selection.logo}
+                        alt={selection.name}
+                        width={250}
+                        height={150}
+                        onError={(e) => {
+                          // При ошибке загрузки изображения используем дефолтное
+                          const configIndex = SELECTIONS_CONFIG.findIndex(
+                            (config) => config.id === selection._id,
+                          );
+                          if (configIndex !== -1) {
+                            e.currentTarget.src =
+                              SELECTIONS_CONFIG[configIndex].defaultImage;
+                          } else {
+                            e.currentTarget.src = '/img/playlist01.png';
+                          }
+                        }}
+                      />
+                      <div className={styles.selection__overlay}>
+                        <span className={styles.selection__name}>
+                          {selection.name}
+                        </span>
+                        <span className={styles.selection__author}>
+                          {selection.author}
+                        </span>
+                      </div>
                     </div>
                   </Link>
                 </div>
