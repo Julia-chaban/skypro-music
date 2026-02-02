@@ -1,5 +1,4 @@
 .main__nav {
-    width: 244px;
     background-color: #181818;
     padding: 20px 0 20px 36px;
     display: flex;
@@ -44,18 +43,8 @@
     transform-origin: center;
 }
 
-/* Анимация бургера при активном состоянии (для десктопа) */
-.nav__burger.active .burger__line:nth-child(1) {
-    transform: rotate(45deg) translate(6px, 6px);
-    background-color: #ffffff;
-}
-
-.nav__burger.active .burger__line:nth-child(2) {
-    opacity: 0;
-}
-
-.nav__burger.active .burger__line:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
+/* Только меняем цвет при активном состоянии (без превращения в крестик) */
+.nav__burger.active .burger__line {
     background-color: #ffffff;
 }
 
@@ -144,18 +133,8 @@
         width: 100% !important;
     }
 
-    /* Анимация бургера при активном состоянии (для мобильных) */
-    .nav__burger.active .burger__line:nth-child(1) {
-        transform: rotate(45deg) translate(5px, 5px) !important;
-        background-color: #ffffff !important;
-    }
-
-    .nav__burger.active .burger__line:nth-child(2) {
-        opacity: 0 !important;
-    }
-
-    .nav__burger.active .burger__line:nth-child(3) {
-        transform: rotate(-45deg) translate(5px, -5px) !important;
+    /* Только меняем цвет при активном состоянии на мобильных (без превращения в крестик) */
+    .nav__burger.active .burger__line {
         background-color: #ffffff !important;
     }
 
@@ -274,7 +253,6 @@
         flex-direction: column;
         align-items: flex-start;
         position: relative;
-        /* ← ИСПРАВЛЕНО: было fixed */
         height: auto;
         padding: 20px 0 20px 36px;
         background-color: #181818;

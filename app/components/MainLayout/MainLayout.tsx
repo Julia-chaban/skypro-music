@@ -1,4 +1,3 @@
-// app/components/MainLayout/MainLayout.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -22,15 +21,22 @@ export default function MainLayout({ children, pageTitle }: MainLayoutProps) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
-        <main className={styles.main}>
+        <div className={styles.main}>
+          {/* Навигация слева */}
           <Navigation
             onBurgerClick={handleBurgerClick}
             isSidebarOpen={isSidebarOpen}
             pageTitle={pageTitle}
           />
-          {children}
+
+          {/* Центральный блок */}
+          <div className={styles.centerContent}>
+            {children} {/* Здесь Centerblock */}
+          </div>
+
+          {/* Сайдбар справа */}
           <Sidebar isOpen={isSidebarOpen} />
-        </main>
+        </div>
         <footer className={styles.footer}></footer>
       </div>
       <Bar />

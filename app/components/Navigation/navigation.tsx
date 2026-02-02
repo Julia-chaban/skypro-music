@@ -98,7 +98,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 className={styles.menu__link}
                 onClick={closeAllMenus}
               >
-                Мой плейлист
+                Мои треки
               </Link>
             </li>
             <li className={styles.menu__item}>
@@ -107,7 +107,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 className={styles.menu__link}
                 onClick={closeAllMenus}
               >
-                Войти
+                Выйти
               </Link>
             </li>
           </ul>
@@ -134,7 +134,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 className={styles.mobile_menu__link}
                 onClick={closeAllMenus}
               >
-                Мой плейлист
+                Мои треки
               </Link>
             </li>
             <li className={styles.mobile_menu__item}>
@@ -143,7 +143,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 className={styles.mobile_menu__link}
                 onClick={closeAllMenus}
               >
-                Войти
+                Выйти
               </Link>
             </li>
           </ul>
