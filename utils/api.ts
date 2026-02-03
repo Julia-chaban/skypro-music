@@ -1,3 +1,4 @@
+// utils/api.ts
 import { TokenResponse } from '@/types/auth';
 
 const API_BASE_URL = 'https://webdev-music-003b5b991590.herokuapp.com';
@@ -23,6 +24,36 @@ const redirectToLogin = () => {
   }
 };
 
+// Функция для обновления токена с повторным запросом
+export const withReauth = async <T>(
+  requestFn: (accessToken: string) => Promise<T>,
+  maxRetries = 1,
+): Promise<T> => {
+  let accessToken = localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    redirectToLogin();
+    throw new ApiError('Требуется авторизация', 401);
+  }
+
+  try {
+    return await requestFn(accessToken);
+  } catch (error: any) {
+    if (error.status === 401 && maxRetries > 0) {
+      try {
+        // Пытаемся обновить токен
+        const newAccessToken = await refreshToken();
+        // Повторяем запрос с новым токеном
+        return await requestFn(newAccessToken.access);
+      } catch (refreshError) {
+        redirectToLogin();
+        throw new ApiError('Сессия истекла. Пожалуйста, войдите снова.', 401);
+      }
+    }
+    throw error;
+  }
+};
+
 export const fetchApi = async <T>(
   endpoint: string,
   options: RequestInit = {},
@@ -39,19 +70,6 @@ export const fetchApi = async <T>(
     ...options,
     headers,
   });
-
-  if (response.status === 401 && requireAuth) {
-    // Попробовать обновить токен
-    try {
-      await refreshToken();
-      // Повторить запрос с обновленным токеном
-      return fetchApi<T>(endpoint, options, requireAuth);
-    } catch (refreshError) {
-      // Если не удалось обновить - редирект на логин
-      redirectToLogin();
-      throw new ApiError('Требуется авторизация', 401);
-    }
-  }
 
   if (!response.ok) {
     let errorMessage = `HTTP error! status: ${response.status}`;
@@ -75,24 +93,43 @@ export const fetchWithAuth = async <T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> => {
-  const accessToken = localStorage.getItem('accessToken');
+  const requestFn = async (accessToken: string): Promise<T> => {
+    const url = `${API_BASE_URL}${endpoint}`;
 
-  if (!accessToken) {
-    redirectToLogin();
-    throw new ApiError('Требуется авторизация', 401);
-  }
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      ...options.headers,
+    };
 
-  return fetchApi<T>(
-    endpoint,
-    {
+    const response = await fetch(url, {
       ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-    true, // requireAuth = true
-  );
+      headers,
+    });
+
+    if (response.status === 401) {
+      throw new ApiError('Требуется авторизация', 401);
+    }
+
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.detail || errorMessage;
+      } catch {
+        // Не удалось распарсить JSON
+      }
+      throw new ApiError(errorMessage, response.status);
+    }
+
+    if (response.status === 204 || options.method === 'DELETE') {
+      return {} as T;
+    }
+
+    return response.json();
+  };
+
+  return withReauth(requestFn);
 };
 
 export const refreshToken = async (): Promise<TokenResponse> => {

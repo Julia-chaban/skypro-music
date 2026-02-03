@@ -1,3 +1,4 @@
+// app/context/AuthContext.tsx
 'use client';
 
 import React, {
@@ -6,8 +7,11 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useCallback,
 } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAppDispatch } from '@/store/features/store';
+import { clearFavorites } from '@/store/features/trackSlice';
 
 interface User {
   email: string;
@@ -36,9 +40,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
 
   const isAuthenticated = !!user;
 
+  // Функция для сохранения данных в localStorage
+  const saveAuthData = useCallback(
+    (userData: User, accessToken: string, refreshToken: string) => {
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+    },
+    [],
+  );
+
+  // Функция для очистки данных из localStorage
+  const clearAuthData = useCallback(() => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }, []);
+
+  // Проверка авторизации при загрузке
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem('user');
@@ -53,17 +76,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('User restored from localStorage:', parsedUser);
         } catch (error) {
           console.error('Error parsing stored user:', error);
-          localStorage.removeItem('user');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          clearAuthData();
         }
       }
       setIsCheckingAuth(false);
     };
 
     checkAuth();
-  }, []);
+  }, [clearAuthData]);
 
+  // Редирект в зависимости от авторизации
   useEffect(() => {
     if (isCheckingAuth) return;
 
@@ -91,138 +113,154 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [pathname, isAuthenticated, isCheckingAuth, router]);
 
-  const login = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      console.log('Login attempt:', { email });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        setIsLoading(true);
+        console.log('Login attempt:', { email });
 
-      const loginData = {
-        email: email.trim(),
-        password: password.trim(),
-      };
-
-      const tokenResponse = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/user/token/',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(loginData),
-        },
-      );
-
-      console.log('Token response status:', tokenResponse.status);
-
-      if (!tokenResponse.ok) {
-        let errorMessage = 'Неверный email или пароль';
-        try {
-          const errorData = await tokenResponse.json();
-          errorMessage = errorData.detail || errorMessage;
-        } catch {}
-        throw new Error(errorMessage);
-      }
-
-      const tokens = await tokenResponse.json();
-      console.log('Tokens received:', tokens);
-
-      if (!tokens.access || !tokens.refresh) {
-        throw new Error('Неверный формат ответа от сервера');
-      }
-
-      const userResponse = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/user/login/',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(loginData),
-        },
-      );
-
-      let userData;
-      if (userResponse.ok) {
-        userData = await userResponse.json();
-      } else {
-        userData = {
-          email: email,
-          username: email.split('@')[0],
-          _id: Date.now(),
+        const loginData = {
+          email: email.trim(),
+          password: password.trim(),
         };
-      }
 
-      console.log('User data:', userData);
-
-      localStorage.setItem('accessToken', tokens.access);
-      localStorage.setItem('refreshToken', tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      setUser(userData);
-
-      console.log('Login successful, redirecting to /');
-      router.push('/');
-      router.refresh();
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.message || 'Произошла ошибка при авторизации');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const signup = async (email: string, password: string, username: string) => {
-    try {
-      setIsLoading(true);
-      console.log('Signup attempt:', { email, username });
-
-      const signupData = {
-        email: email.trim(),
-        password: password.trim(),
-        username: username.trim(),
-      };
-
-      const response = await fetch(
-        'https://webdev-music-003b5b991590.herokuapp.com/user/signup/',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        // Получаем токены
+        const tokenResponse = await fetch(
+          'https://webdev-music-003b5b991590.herokuapp.com/user/token/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loginData),
           },
-          body: JSON.stringify(signupData),
-        },
-      );
+        );
 
-      console.log('Signup response status:', response.status);
+        console.log('Token response status:', tokenResponse.status);
 
-      if (!response.ok) {
-        let errorMessage = 'Ошибка при регистрации';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.detail || errorMessage;
-        } catch {}
-        throw new Error(errorMessage);
+        if (!tokenResponse.ok) {
+          let errorMessage = 'Неверный email или пароль';
+          try {
+            const errorData = await tokenResponse.json();
+            errorMessage = errorData.detail || errorMessage;
+          } catch {}
+          throw new Error(errorMessage);
+        }
+
+        const tokens = await tokenResponse.json();
+        console.log('Tokens received:', tokens);
+
+        if (!tokens.access || !tokens.refresh) {
+          throw new Error('Неверный формат ответа от сервера');
+        }
+
+        // Получаем данные пользователя
+        const userResponse = await fetch(
+          'https://webdev-music-003b5b991590.herokuapp.com/user/login/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loginData),
+          },
+        );
+
+        let userData;
+        if (userResponse.ok) {
+          userData = await userResponse.json();
+        } else {
+          userData = {
+            email: email,
+            username: email.split('@')[0],
+            _id: Date.now(),
+          };
+        }
+
+        console.log('User data:', userData);
+
+        // Сохраняем данные
+        saveAuthData(userData, tokens.access, tokens.refresh);
+        setUser(userData);
+
+        console.log('Login successful, redirecting to /');
+        router.push('/');
+        router.refresh();
+      } catch (error: any) {
+        console.error('Login error:', error);
+        throw new Error(error.message || 'Произошла ошибка при авторизации');
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [saveAuthData, router],
+  );
 
-      await login(email, password);
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      throw new Error(error.message || 'Произошла ошибка при регистрации');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const signup = useCallback(
+    async (email: string, password: string, username: string) => {
+      try {
+        setIsLoading(true);
+        console.log('Signup attempt:', { email, username });
 
-  const logout = () => {
+        const signupData = {
+          email: email.trim(),
+          password: password.trim(),
+          username: username.trim(),
+        };
+
+        const response = await fetch(
+          'https://webdev-music-003b5b991590.herokuapp.com/user/signup/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(signupData),
+          },
+        );
+
+        console.log('Signup response status:', response.status);
+
+        if (!response.ok) {
+          let errorMessage = 'Ошибка при регистрации';
+          try {
+            const errorData = await response.json();
+            errorMessage =
+              errorData.message || errorData.detail || errorMessage;
+          } catch {}
+          throw new Error(errorMessage);
+        }
+
+        await login(email, password);
+      } catch (error: any) {
+        console.error('Signup error:', error);
+        throw new Error(error.message || 'Произошла ошибка при регистрации');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [login],
+  );
+
+  const logout = useCallback(() => {
     console.log('Logging out');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+
+    // Очищаем состояние
+    clearAuthData();
     setUser(null);
 
-    router.push('/auth/signin');
+    // Очищаем избранное в Redux
+    dispatch(clearFavorites());
+
+    // Если находимся на странице избранного, редирект на главную
+    if (pathname === '/favorites') {
+      router.push('/');
+    } else {
+      router.push('/auth/signin');
+    }
+
     router.refresh();
-  };
+  }, [clearAuthData, dispatch, pathname, router]);
 
   const value = {
     user,

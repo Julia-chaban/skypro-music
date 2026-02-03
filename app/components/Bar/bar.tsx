@@ -1,4 +1,5 @@
-﻿'use client';
+﻿// app/components/Bar/Bar.tsx
+'use client';
 
 import React, {
   useEffect,
@@ -20,13 +21,13 @@ import {
   toggleLooping,
   toggleShuffling,
 } from '@/store/features/trackSlice';
+import { useLikeTrack } from '@/app/hooks/useLikeTrack';
+import { useFormatTime } from '@/app/hooks/useFormatTime';
 import styles from './bar.module.css';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import VolumeControl from '../VolumeControl/VolumeControl';
 
 export default function Bar() {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isDisliked, setIsDisliked] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useAppDispatch();
 
@@ -40,6 +41,57 @@ export default function Bar() {
     isShuffling,
   } = useAppSelector((state) => state.tracks);
 
+  // Используем хук для лайков
+  const {
+    isLiked,
+    isLoading: likeLoading,
+    error: likeError,
+    toggleLike,
+  } = useLikeTrack(currentTrack);
+  const { formatTime } = useFormatTime();
+
+  const [showLikeError, setShowLikeError] = useState(false);
+  const [isLikeAnimating, setIsLikeAnimating] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
+
+  // Мемоизация форматированных значений времени
+  const formattedCurrentTime = useMemo(
+    () => formatTime(currentTime),
+    [currentTime, formatTime],
+  );
+  const formattedDuration = useMemo(
+    () => formatTime(duration),
+    [duration, formatTime],
+  );
+
+  // Мемоизация стилей иконок
+  const repeatIconStyle = useMemo(
+    () => ({
+      stroke: isLooping ? '#ffffff' : '#696969',
+      fill: isLooping ? '#ffffff' : 'transparent',
+    }),
+    [isLooping],
+  );
+
+  const shuffleIconStyle = useMemo(
+    () => ({
+      stroke: isShuffling ? '#ffffff' : '#696969',
+      fill: isShuffling ? '#ffffff' : 'transparent',
+    }),
+    [isShuffling],
+  );
+
+  // Мемоизация состояний кнопок
+  const isPrevDisabled = useMemo(() => !currentTrack, [currentTrack]);
+  const isPlayDisabled = useMemo(() => !currentTrack, [currentTrack]);
+  const isNextDisabled = useMemo(() => !currentTrack, [currentTrack]);
+  const isRepeatDisabled = useMemo(() => !currentTrack, [currentTrack]);
+  const isShuffleDisabled = useMemo(() => !currentTrack, [currentTrack]);
+  const isLikeDisabled = useMemo(
+    () => !currentTrack || likeLoading,
+    [currentTrack, likeLoading],
+  );
+
   // Инициализация аудио - только один раз
   useEffect(() => {
     const audio = audioRef.current;
@@ -50,6 +102,7 @@ export default function Bar() {
     const handleLoadedMetadata = () => {
       if (!isNaN(audio.duration) && isFinite(audio.duration)) {
         dispatch(setDuration(audio.duration));
+        setIsAudioReady(true);
       }
     };
 
@@ -69,18 +122,33 @@ export default function Bar() {
     const handleError = () => {
       console.error('Ошибка аудио элемента:', audio.error);
       dispatch(setIsPlaying(false));
+      setIsAudioReady(false);
+    };
+
+    const handleCanPlay = () => {
+      setIsAudioReady(true);
+      console.log('Аудио готово к воспроизведению');
+    };
+
+    const handleWaiting = () => {
+      console.log('Аудио ожидает загрузки');
+      setIsAudioReady(false);
     };
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('waiting', handleWaiting);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('waiting', handleWaiting);
     };
   }, [dispatch, isLooping]);
 
@@ -115,10 +183,16 @@ export default function Bar() {
     if (currentSrc && currentSrc === newSrc) {
       // Тот же трек, только обновляем воспроизведение если нужно
       if (isPlaying && audio.paused) {
-        audio.play().catch((error) => {
-          console.error('Ошибка воспроизведения:', error);
-          dispatch(setIsPlaying(false));
-        });
+        // Проверяем, готово ли аудио к воспроизведению
+        if (isAudioReady && audio.readyState >= 2) {
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.error('Ошибка воспроизведения:', error);
+              dispatch(setIsPlaying(false));
+            });
+          }
+        }
       } else if (!isPlaying && !audio.paused) {
         audio.pause();
       }
@@ -127,17 +201,35 @@ export default function Bar() {
 
     // Новый трек
     console.log('Загружаем новый трек:', currentTrack.name);
+
+    // Сбрасываем флаг готовности
+    setIsAudioReady(false);
+
+    // Загружаем новый трек
     audio.src = trackUrl;
     audio.volume = volume;
     audio.loop = isLooping;
 
-    if (isPlaying) {
-      audio.play().catch((error) => {
-        console.error('Ошибка воспроизведения:', error);
-        dispatch(setIsPlaying(false));
-      });
-    }
-  }, [currentTrack, dispatch, volume, isLooping, isPlaying]);
+    // Устанавливаем обработчик для воспроизведения после загрузки
+    const handleCanPlayThrough = () => {
+      setIsAudioReady(true);
+      if (isPlaying) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.error('Ошибка воспроизведения нового трека:', error);
+            dispatch(setIsPlaying(false));
+          });
+        }
+      }
+    };
+
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+
+    return () => {
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+    };
+  }, [currentTrack, dispatch, volume, isLooping, isPlaying, isAudioReady]);
 
   // Управление громкостью
   useEffect(() => {
@@ -165,13 +257,40 @@ export default function Bar() {
         dispatch(setIsPlaying(false));
       } else {
         // Если трек на паузе, продолжаем воспроизведение
-        audio.play().catch((error) => {
-          console.error('Ошибка воспроизведения:', error);
-        });
-        dispatch(setIsPlaying(true));
+        // Проверяем, готово ли аудио
+        if (isAudioReady && audio.readyState >= 2) {
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                dispatch(setIsPlaying(true));
+              })
+              .catch((error) => {
+                console.error('Ошибка воспроизведения:', error);
+                dispatch(setIsPlaying(false));
+              });
+          }
+        } else {
+          // Если аудио не готово, ждем
+          const handleCanPlay = () => {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  dispatch(setIsPlaying(true));
+                })
+                .catch((error) => {
+                  console.error('Ошибка воспроизведения:', error);
+                  dispatch(setIsPlaying(false));
+                });
+            }
+            audio.removeEventListener('canplay', handleCanPlay);
+          };
+          audio.addEventListener('canplay', handleCanPlay);
+        }
       }
     }
-  }, [currentTrack, isPlaying, dispatch]);
+  }, [currentTrack, isPlaying, dispatch, isAudioReady]);
 
   const handleNextClick = useCallback(() => {
     // РУЧНОЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
@@ -192,6 +311,32 @@ export default function Bar() {
     // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ РЕЖИМА ПЕРЕМЕШИВАНИЯ (SHUFFLE)
     dispatch(toggleShuffling());
   }, [dispatch]);
+
+  // Обработчик лайка для прогресс-бара
+  const handleLikeClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!currentTrack || likeLoading) return;
+
+      setIsLikeAnimating(true);
+
+      try {
+        await toggleLike();
+
+        if (likeError) {
+          setShowLikeError(true);
+          setTimeout(() => setShowLikeError(false), 3000);
+        }
+      } catch (err) {
+        console.error('Ошибка при обработке лайка:', err);
+      } finally {
+        setTimeout(() => setIsLikeAnimating(false), 500);
+      }
+    },
+    [currentTrack, toggleLike, likeError, likeLoading],
+  );
 
   // Обработчик для VolumeControl
   const handleVolumeChange = useCallback(
@@ -214,34 +359,243 @@ export default function Bar() {
     [duration, dispatch],
   );
 
-  const handleLikeClick = useCallback(() => {
-    setIsLiked(!isLiked);
-    if (isDisliked) setIsDisliked(false);
-  }, [isLiked, isDisliked]);
+  // Мемоизация класса для лайка
+  const likeClassName = useMemo(() => {
+    const classes = [styles.trackPlay__like, styles.btnIcon];
 
-  const handleDislikeClick = useCallback(() => {
-    setIsDisliked(!isDisliked);
-    if (isLiked) setIsLiked(false);
-  }, [isDisliked, isLiked]);
+    if (isLikeAnimating) {
+      classes.push(styles.animating);
+    }
 
-  // Форматирование времени
-  const formatTime = useCallback((time: number) => {
-    if (!time || isNaN(time)) return '0:00';
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  }, []);
+    return classes.join(' ');
+  }, [isLikeAnimating]);
 
-  // Определяем цвет иконок в зависимости от состояния
-  const getRepeatIconColor = useCallback(() => {
-    return isLooping ? '#ffffff' : '#696969';
-  }, [isLooping]);
+  // Мемоизация стиля для лайка
+  const likeButtonStyle = useMemo(() => {
+    if (likeLoading) {
+      return { opacity: 0.5, cursor: 'not-allowed' };
+    }
+    return {};
+  }, [likeLoading]);
 
-  const getShuffleIconColor = useCallback(() => {
-    return isShuffling ? '#ffffff' : '#696969';
-  }, [isShuffling]);
+  // Мемоизация JSX для прогресс-бара
+  const progressBar = useMemo(
+    () =>
+      currentTrack && duration > 0 ? (
+        <ProgressBar
+          max={duration}
+          value={currentTime}
+          step={0.1}
+          onChange={handleProgressChange}
+        />
+      ) : null,
+    [currentTrack, duration, currentTime, handleProgressChange],
+  );
 
-  // Мемоизация JSX
+  // Мемоизация JSX для иконки воспроизведения
+  const playIcon = useMemo(
+    () =>
+      currentTrack && isPlaying ? (
+        <use xlinkHref="/icon/pause.svg"></use>
+      ) : (
+        <use xlinkHref="/icon/play.svg"></use>
+      ),
+    [currentTrack, isPlaying],
+  );
+
+  // Мемоизация JSX для информации о треке
+  const trackInfo = useMemo(
+    () => ({
+      author: currentTrack
+        ? currentTrack.author || 'Неизвестный исполнитель'
+        : 'Ты та...',
+      album: currentTrack
+        ? currentTrack.album || 'Неизвестный альбом'
+        : 'Баста',
+    }),
+    [currentTrack],
+  );
+
+  // Мемоизация JSX для времени трека
+  const trackTime = useMemo(
+    () =>
+      currentTrack && duration > 0 ? (
+        <div className={styles.track__time}>
+          <span className={styles.track__timeText}>
+            {formattedCurrentTime} / {formattedDuration}
+          </span>
+        </div>
+      ) : null,
+    [currentTrack, duration, formattedCurrentTime, formattedDuration],
+  );
+
+  // Мемоизация JSX для ошибки лайка
+  const likeErrorTooltip = useMemo(
+    () =>
+      showLikeError && likeError ? (
+        <div className={styles.barErrorTooltip}>{likeError}</div>
+      ) : null,
+    [showLikeError, likeError],
+  );
+
+  // Мемоизация JSX для контролов
+  const playerControls = useMemo(
+    () => (
+      <div className={styles.player__controls}>
+        {/* КНОПКА ПРЕДЫДУЩЕГО ТРЕКА */}
+        <div
+          className={`${styles.player__btnPrev} ${styles.btn}`}
+          onClick={!isPrevDisabled ? handlePrevClick : undefined}
+          style={isPrevDisabled ? { opacity: 0.5, cursor: 'default' } : {}}
+        >
+          <svg
+            className={styles.player__btnPrevSvg}
+            style={{ fill: '#ffffff', stroke: '#ffffff' }}
+          >
+            <use xlinkHref="/icon/prev.svg"></use>
+          </svg>
+        </div>
+        {/* КНОПКА ВОСПРОИЗВЕДЕНИЯ/ПАУЗЫ */}
+        <div
+          className={`${styles.player__btnPlay} ${styles.btn}`}
+          onClick={!isPlayDisabled ? handlePlayClick : undefined}
+          style={isPlayDisabled ? { opacity: 0.5, cursor: 'default' } : {}}
+        >
+          <svg
+            className={styles.player__btnPlaySvg}
+            style={{ fill: '#ffffff' }}
+          >
+            {playIcon}
+          </svg>
+        </div>
+        {/* КНОПКА СЛЕДУЮЩЕГО ТРЕКА */}
+        <div
+          className={`${styles.player__btnNext} ${styles.btn}`}
+          onClick={!isNextDisabled ? handleNextClick : undefined}
+          style={isNextDisabled ? { opacity: 0.5, cursor: 'default' } : {}}
+        >
+          <svg
+            className={styles.player__btnNextSvg}
+            style={{ fill: '#ffffff', stroke: '#ffffff' }}
+          >
+            <use xlinkHref="/icon/next.svg"></use>
+          </svg>
+        </div>
+        {/* КНОПКА ПОВТОРА (ЗАЦИКЛИВАНИЕ) */}
+        <div
+          className={`${styles.player__btnRepeat} ${styles.btnIcon}`}
+          onClick={!isRepeatDisabled ? handleRepeatClick : undefined}
+          style={isRepeatDisabled ? { opacity: 0.5, cursor: 'default' } : {}}
+        >
+          <svg className={styles.player__btnRepeatSvg} style={repeatIconStyle}>
+            <use xlinkHref="/icon/repeat.svg"></use>
+          </svg>
+        </div>
+        {/* КНОПКА ПЕРЕМЕШИВАНИЯ (SHUFFLE) */}
+        <div
+          className={`${styles.player__btnShuffle} ${styles.btnIcon}`}
+          onClick={!isShuffleDisabled ? handleShuffleClick : undefined}
+          style={isShuffleDisabled ? { opacity: 0.5, cursor: 'default' } : {}}
+        >
+          <svg
+            className={styles.player__btnShuffleSvg}
+            style={shuffleIconStyle}
+          >
+            <use xlinkHref="/icon/shuffle.svg"></use>
+          </svg>
+        </div>
+      </div>
+    ),
+    [
+      isPrevDisabled,
+      handlePrevClick,
+      isPlayDisabled,
+      handlePlayClick,
+      playIcon,
+      isNextDisabled,
+      handleNextClick,
+      isRepeatDisabled,
+      handleRepeatClick,
+      repeatIconStyle,
+      isShuffleDisabled,
+      handleShuffleClick,
+      shuffleIconStyle,
+    ],
+  );
+
+  // Мемоизация JSX для информации о треке
+  const trackPlayInfo = useMemo(
+    () => (
+      <div className={styles.player__trackPlay}>
+        <div className={styles.trackPlay__contain}>
+          <div className={styles.trackPlay__image}>
+            <svg className={styles.trackPlay__svg}>
+              <use xlinkHref="/icon/note.svg"></use>
+            </svg>
+          </div>
+          <div className={styles.trackPlay__author}>
+            <a className={styles.trackPlay__authorLink} href="">
+              {trackInfo.author}
+            </a>
+          </div>
+          <div className={styles.trackPlay__album}>
+            <a className={styles.trackPlay__albumLink} href="">
+              {trackInfo.album}
+            </a>
+          </div>
+        </div>
+
+        <div className={styles.trackPlay__dislike}>
+          {/* Иконка лайка/дизлайка */}
+          <div
+            className={likeClassName}
+            onClick={!isLikeDisabled ? handleLikeClick : undefined}
+            style={likeButtonStyle}
+          >
+            <svg className={styles.trackPlay__likeSvg}>
+              <use
+                xlinkHref={isLiked ? '/icon/dislike.svg' : '/icon/like.svg'}
+              ></use>
+            </svg>
+          </div>
+
+          {likeErrorTooltip}
+          {trackTime}
+        </div>
+      </div>
+    ),
+    [
+      trackInfo,
+      likeClassName,
+      isLikeDisabled,
+      handleLikeClick,
+      likeButtonStyle,
+      isLiked,
+      likeErrorTooltip,
+      trackTime,
+    ],
+  );
+
+  // Мемоизация JSX для контроля громкости
+  const volumeControl = useMemo(
+    () => (
+      <div className={styles.bar__volumeBlock}>
+        <div className={styles.volume__content}>
+          <div className={styles.volume__image}>
+            <svg className={styles.volume__svg}>
+              <use xlinkHref="/icon/volume.svg"></use>
+            </svg>
+          </div>
+          <div className={styles.volume__progress}>
+            <VolumeControl volume={volume} onChange={handleVolumeChange} />
+          </div>
+        </div>
+      </div>
+    ),
+    [volume, handleVolumeChange],
+  );
+
+  // Мемоизация основного контента
   const barContent = useMemo(
     () => (
       <>
@@ -251,186 +605,19 @@ export default function Bar() {
         {/* ОДИН БАР - рендерится всегда */}
         <div className={styles.bar}>
           <div className={styles.bar__content}>
-            {/* Прогресс-бар с использованием компонента ProgressBar - БЕЗ ЛИШНЕЙ ОБЕРТКИ */}
-            {currentTrack && duration > 0 && (
-              <ProgressBar
-                max={duration}
-                value={currentTime}
-                step={0.1}
-                onChange={handleProgressChange}
-              />
-            )}
-
+            {progressBar}
             <div className={styles.bar__playerBlock}>
               <div className={styles.bar__player}>
-                <div className={styles.player__controls}>
-                  {/* КНОПКА ПРЕДЫДУЩЕГО ТРЕКА */}
-                  <div
-                    className={`${styles.player__btnPrev} ${styles.btn}`}
-                    onClick={currentTrack ? handlePrevClick : undefined}
-                  >
-                    <svg
-                      className={styles.player__btnPrevSvg}
-                      style={{ fill: '#ffffff', stroke: '#ffffff' }}
-                    >
-                      <use xlinkHref="/icon/prev.svg"></use>
-                    </svg>
-                  </div>
-                  {/* КНОПКА ВОСПРОИЗВЕДЕНИЯ/ПАУЗЫ */}
-                  <div
-                    className={`${styles.player__btnPlay} ${styles.btn}`}
-                    onClick={currentTrack ? handlePlayClick : undefined}
-                  >
-                    <svg
-                      className={styles.player__btnPlaySvg}
-                      style={{ fill: '#ffffff' }}
-                    >
-                      {currentTrack && isPlaying ? (
-                        <use xlinkHref="/icon/pause.svg"></use>
-                      ) : (
-                        <use xlinkHref="/icon/play.svg"></use>
-                      )}
-                    </svg>
-                  </div>
-                  {/* КНОПКА СЛЕДУЮЩЕГО ТРЕКА */}
-                  <div
-                    className={`${styles.player__btnNext} ${styles.btn}`}
-                    onClick={currentTrack ? handleNextClick : undefined}
-                  >
-                    <svg
-                      className={styles.player__btnNextSvg}
-                      style={{ fill: '#ffffff', stroke: '#ffffff' }}
-                    >
-                      <use xlinkHref="/icon/next.svg"></use>
-                    </svg>
-                  </div>
-                  {/* КНОПКА ПОВТОРА (ЗАЦИКЛИВАНИЕ) */}
-                  <div
-                    className={`${styles.player__btnRepeat} ${styles.btnIcon}`}
-                    onClick={currentTrack ? handleRepeatClick : undefined}
-                  >
-                    <svg
-                      className={styles.player__btnRepeatSvg}
-                      style={{
-                        stroke: getRepeatIconColor(),
-                        fill: isLooping ? '#ffffff' : 'transparent',
-                      }}
-                    >
-                      <use xlinkHref="/icon/repeat.svg"></use>
-                    </svg>
-                  </div>
-                  {/* КНОПКА ПЕРЕМЕШИВАНИЯ (SHUFFLE) */}
-                  <div
-                    className={`${styles.player__btnShuffle} ${styles.btnIcon}`}
-                    onClick={currentTrack ? handleShuffleClick : undefined}
-                  >
-                    <svg
-                      className={styles.player__btnShuffleSvg}
-                      style={{
-                        stroke: getShuffleIconColor(),
-                        fill: isShuffling ? '#ffffff' : 'transparent',
-                      }}
-                    >
-                      <use xlinkHref="/icon/shuffle.svg"></use>
-                    </svg>
-                  </div>
-                </div>
-
-                <div className={styles.player__trackPlay}>
-                  <div className={styles.trackPlay__contain}>
-                    <div className={styles.trackPlay__image}>
-                      <svg className={styles.trackPlay__svg}>
-                        <use xlinkHref="/icon/note.svg"></use>
-                      </svg>
-                    </div>
-                    <div className={styles.trackPlay__author}>
-                      <a className={styles.trackPlay__authorLink} href="">
-                        {currentTrack
-                          ? currentTrack.author || 'Неизвестный исполнитель'
-                          : 'Ты та...'}
-                      </a>
-                    </div>
-                    <div className={styles.trackPlay__album}>
-                      <a className={styles.trackPlay__albumLink} href="">
-                        {currentTrack
-                          ? currentTrack.album || 'Неизвестный альбом'
-                          : 'Баста'}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className={styles.trackPlay__dislike}>
-                    <div
-                      className={`${styles.trackPlay__like} ${styles.btnIcon} ${isLiked ? styles.active : ''}`}
-                      onClick={handleLikeClick}
-                    >
-                      <svg className={styles.trackPlay__likeSvg}>
-                        <use xlinkHref="/icon/like.svg"></use>
-                      </svg>
-                    </div>
-                    <div
-                      className={`${styles.trackPlay__dislike} ${styles.btnIcon} ${isDisliked ? styles.active : ''}`}
-                      onClick={handleDislikeClick}
-                    >
-                      <svg className={styles.trackPlay__dislikeSvg}>
-                        <use xlinkHref="/icon/dislike.svg"></use>
-                      </svg>
-                    </div>
-                    {currentTrack && duration > 0 && (
-                      <div className={styles.track__time}>
-                        <span className={styles.track__timeText}>
-                          {formatTime(currentTime)} / {formatTime(duration)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {playerControls}
+                {trackPlayInfo}
               </div>
-
-              <div className={styles.bar__volumeBlock}>
-                <div className={styles.volume__content}>
-                  <div className={styles.volume__image}>
-                    <svg className={styles.volume__svg}>
-                      <use xlinkHref="/icon/volume.svg"></use>
-                    </svg>
-                  </div>
-                  <div className={styles.volume__progress}>
-                    {/* Используем компонент VolumeControl */}
-                    <VolumeControl
-                      volume={volume}
-                      onChange={handleVolumeChange}
-                    />
-                  </div>
-                </div>
-              </div>
+              {volumeControl}
             </div>
           </div>
         </div>
       </>
     ),
-    [
-      currentTrack,
-      isPlaying,
-      volume,
-      currentTime,
-      duration,
-      isLooping,
-      isShuffling,
-      isLiked,
-      isDisliked,
-      getRepeatIconColor,
-      getShuffleIconColor,
-      handlePrevClick,
-      handlePlayClick,
-      handleNextClick,
-      handleRepeatClick,
-      handleShuffleClick,
-      handleProgressChange,
-      handleVolumeChange,
-      handleLikeClick,
-      handleDislikeClick,
-      formatTime,
-    ],
+    [progressBar, playerControls, trackPlayInfo, volumeControl],
   );
 
   return barContent;

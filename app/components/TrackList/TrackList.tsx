@@ -1,6 +1,7 @@
+// app/components/TrackList/TrackList.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import TrackItem from '@/app/components/TrackItem/TrackItem';
 import { Track } from '@/types/track';
 import styles from './TrackList.module.css';
@@ -18,7 +19,8 @@ const TrackList: React.FC<TrackListProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Мемоизируем функцию загрузки треков
+  const fetchTracks = useCallback(async () => {
     // Если треки переданы из родителя (из подборки через Centerblock)
     if (propTracks && propTracks.length > 0) {
       setTracks(propTracks);
@@ -27,10 +29,6 @@ const TrackList: React.FC<TrackListProps> = ({
     }
 
     // Если нет переданных треков, загружаем сами
-    fetchTracks();
-  }, [collectionId, propTracks]);
-
-  const fetchTracks = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -67,61 +65,82 @@ const TrackList: React.FC<TrackListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [collectionId, propTracks]);
 
-  const handleRetry = () => {
+  useEffect(() => {
     fetchTracks();
-  };
+  }, [fetchTracks]);
 
-  if (loading) {
-    return (
+  // Мемоизируем обработчик повтора
+  const handleRetry = useCallback(() => {
+    fetchTracks();
+  }, [fetchTracks]);
+
+  // Мемоизируем JSX для состояния загрузки
+  const loadingContent = useMemo(
+    () => (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
         <p>Загрузка треков...</p>
       </div>
-    );
-  }
+    ),
+    [],
+  );
 
-  if (error) {
-    return (
+  // Мемоизируем JSX для состояния ошибки
+  const errorContent = useMemo(
+    () => (
       <div className={styles.error}>
         <div>{error}</div>
         <button onClick={handleRetry} className={styles.retryButton}>
           Попробовать снова
         </button>
       </div>
-    );
-  }
+    ),
+    [error, handleRetry],
+  );
 
-  if (tracks.length === 0) {
-    return <div className={styles.empty}>Треков не найдено</div>;
-  }
+  // Мемоизируем JSX для пустого состояния
+  const emptyContent = useMemo(
+    () => <div className={styles.empty}>Треков не найдено</div>,
+    [],
+  );
 
-  return (
-    <div className={styles.trackList}>
-      <div className={styles.trackListHeader}>
-        <div className={styles.headerNumber}>№</div>
-        <div className={styles.headerTitle}>НАЗВАНИЕ</div>
-        <div className={styles.headerAlbum}>АЛЬБОМ</div>
-        <div className={styles.headerDuration}>
-          <svg className={styles.durationIcon}>
-            <use xlinkHref="/icon/time.svg"></use>
-          </svg>
+  // Мемоизируем JSX для списка треков
+  const trackListContent = useMemo(
+    () => (
+      <div className={styles.trackList}>
+        <div className={styles.trackListHeader}>
+          <div className={styles.headerNumber}>№</div>
+          <div className={styles.headerTitle}>НАЗВАНИЕ</div>
+          <div className={styles.headerAlbum}>АЛЬБОМ</div>
+          <div className={styles.headerDuration}>
+            <svg className={styles.durationIcon}>
+              <use xlinkHref="/icon/time.svg"></use>
+            </svg>
+          </div>
+        </div>
+
+        <div className={styles.trackListContent}>
+          {tracks.map((track, index) => (
+            <TrackItem
+              key={track._id}
+              track={track}
+              index={index}
+              tracks={tracks}
+            />
+          ))}
         </div>
       </div>
-
-      <div className={styles.trackListContent}>
-        {tracks.map((track, index) => (
-          <TrackItem
-            key={track._id}
-            track={track}
-            index={index}
-            tracks={tracks}
-          />
-        ))}
-      </div>
-    </div>
+    ),
+    [tracks],
   );
+
+  if (loading) return loadingContent;
+  if (error) return errorContent;
+  if (tracks.length === 0) return emptyContent;
+
+  return trackListContent;
 };
 
-export default TrackList;
+export default React.memo(TrackList);

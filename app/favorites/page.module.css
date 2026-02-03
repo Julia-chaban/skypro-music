@@ -1,0 +1,281 @@
+/* app/favorites/page.module.css */
+.favoritesPage {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.favoritesHeader {
+    margin-bottom: 40px;
+}
+
+.favoritesTitle {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 64px;
+    line-height: 72px;
+    letter-spacing: -0.8px;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.favoritesStats {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.tracksCount,
+.duration {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #b672ff;
+}
+
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    gap: 20px;
+}
+
+.loadingSpinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(182, 114, 255, 0.3);
+    border-top-color: #b672ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.errorAlert {
+    background: rgba(255, 77, 77, 0.1);
+    border: 1px solid #ff4d4d;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.errorAlert p {
+    margin: 0;
+    color: #ff4d4d;
+    font-size: 14px;
+}
+
+.retryButton {
+    background: #b672ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+    background: #9a48f1;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    gap: 20px;
+    text-align: center;
+}
+
+.emptyStateIcon {
+    width: 80px;
+    height: 80px;
+    background: rgba(182, 114, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emptyStateIcon svg {
+    width: 40px;
+    height: 40px;
+    fill: #b672ff;
+    stroke: #b672ff;
+}
+
+.emptyStateTitle {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 32px;
+    color: #ffffff;
+    margin: 0;
+}
+
+.emptyStateText {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #696969;
+    margin: 0;
+    max-width: 400px;
+}
+
+.trackListHeader {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 24px;
+    color: #696969;
+    text-transform: uppercase;
+}
+
+.headerNumber {
+    width: 5%;
+    text-align: center;
+}
+
+.headerTitle {
+    width: 35%;
+    padding-left: 20px;
+}
+
+.headerAlbum {
+    width: 25%;
+}
+
+.headerActions {
+    width: 10%;
+    text-align: center;
+}
+
+.headerDuration {
+    width: 25%;
+    text-align: right;
+    padding-right: 20px;
+}
+
+.durationIcon {
+    width: 16px;
+    height: 16px;
+    fill: #696969;
+}
+
+.favoriteTrackItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.trackActions {
+    width: 10%;
+    display: flex;
+    justify-content: center;
+}
+
+.removeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.removeButton:hover {
+    background: rgba(255, 77, 77, 0.1);
+}
+
+.removeIcon {
+    width: 16px;
+    height: 16px;
+    fill: #696969;
+    stroke: #696969;
+    transition: all 0.2s ease;
+}
+
+.removeButton:hover .removeIcon {
+    fill: #ff4d4d;
+    stroke: #ff4d4d;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .favoritesPage {
+        padding: 10px;
+    }
+
+    .favoritesTitle {
+        font-size: 48px;
+        line-height: 56px;
+    }
+
+    .trackListHeader {
+        font-size: 12px;
+    }
+
+    .headerAlbum {
+        display: none;
+    }
+
+    .headerTitle {
+        width: 50%;
+    }
+
+    .headerActions {
+        width: 15%;
+    }
+
+    .headerDuration {
+        width: 30%;
+    }
+}
+
+@media (max-width: 480px) {
+    .favoritesTitle {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .favoritesStats {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .trackListHeader {
+        display: none;
+    }
+
+    .favoriteTrackItem {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .trackActions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+}

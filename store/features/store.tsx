@@ -1,3 +1,4 @@
+// store/features/store.ts
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { trackSliceReducer } from './trackSlice';
@@ -11,8 +12,10 @@ export const makeStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          // Игнорируем определенные пути в состоянии (если нужно)
-          ignoredPaths: ['tracks.currentTrack'],
+          // Игнорируем определенные пути в состоянии
+          ignoredPaths: ['tracks.currentTrack.track_file'],
+          // Или можно полностью отключить проверку для разработки
+          // ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       }),
   });

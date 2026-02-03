@@ -84,7 +84,6 @@ export default function Centerblock() {
     try {
       console.log(`🎯 Загружаем подборку с ID: ${id}`);
 
-      // ИСПРАВЛЕНИЕ НАЧИНАЕТСЯ ЗДЕСЬ
       // Получаем все подборки
       const data = await fetchApi<any>('/catalog/selection/all/');
       console.log('📦 Все подборки:', data);
@@ -158,7 +157,6 @@ export default function Centerblock() {
         });
         console.log(`✅ Найдено треков для подборки: ${tracksArray.length}`);
       }
-      // ИСПРАВЛЕНИЕ ЗАКАНЧИВАЕТСЯ ЗДЕСЬ
 
       console.log(`🎵 Треков в подборке: ${tracksArray.length}`);
 

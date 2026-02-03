@@ -1,3 +1,4 @@
+// types/track.ts
 export interface Track {
   _id: number;
   name: string;
@@ -9,6 +10,9 @@ export interface Track {
   logo: string | null;
   track_file: string;
   stared_user: number[];
+  // Добавляем поля для лайков
+  likes_count?: number;
+  is_liked?: boolean;
 }
 
 // Интерфейс для подборки/селекции
@@ -84,4 +88,25 @@ export interface PlaybackState {
   currentTime: number;
   duration: number;
   volume: number;
+}
+
+// 6. Новые интерфейсы для лайков
+export interface LikeResponse {
+  success: boolean;
+  message?: string;
+  track_id: number;
+  likes_count: number;
+}
+
+// 7. Интерфейс для избранных треков пользователя
+export interface FavoriteTracksResponse {
+  tracks: Track[];
+  count: number;
+}
+
+// 8. Интерфейс для обновленного трека с лайками
+export interface UpdatedTrackResponse {
+  track: Track;
+  likes_count: number;
+  is_liked: boolean;
 }

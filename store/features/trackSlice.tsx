@@ -1,3 +1,4 @@
+// store/features/trackSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Track } from '@/types/track';
 
@@ -14,6 +15,13 @@ type initialStateType = {
   shuffledPlaylist: Track[];
   filteredPlaylist: Track[];
   useFilteredPlaylist: boolean;
+  // Добавляем состояние для избранного
+  favoriteTracks: Track[];
+  isFavoriteLoading: boolean;
+  favoriteError: string | null;
+  // Заменяем Set на массив для сериализации
+  likedTrackIds: number[];
+  trackLikesCount: Record<number, number>;
 };
 
 const initialState: initialStateType = {
@@ -29,6 +37,12 @@ const initialState: initialStateType = {
   shuffledPlaylist: [],
   filteredPlaylist: [],
   useFilteredPlaylist: false,
+  // Новые поля
+  favoriteTracks: [],
+  isFavoriteLoading: false,
+  favoriteError: null,
+  likedTrackIds: [], // Теперь массив вместо Set
+  trackLikesCount: {},
 };
 
 const trackSlice = createSlice({
@@ -353,6 +367,227 @@ const trackSlice = createSlice({
       state.duration = 0;
       state.currentTrackIndex = -1;
     },
+
+    // НОВЫЕ РЕДУКТОРЫ ДЛЯ ЛАЙКОВ
+
+    // Загрузка избранных треков
+    setFavoriteTracks: (state, action: PayloadAction<Track[]>) => {
+      state.favoriteTracks = action.payload;
+
+      // Обновляем likedTrackIds и trackLikesCount
+      action.payload.forEach((track) => {
+        // Добавляем ID трека в массив, если его там нет
+        if (!state.likedTrackIds.includes(track._id)) {
+          state.likedTrackIds.push(track._id);
+        }
+        state.trackLikesCount[track._id] = track.likes_count || 0;
+      });
+    },
+
+    // Установка состояния загрузки избранного
+    setFavoriteLoading: (state, action: PayloadAction<boolean>) => {
+      state.isFavoriteLoading = action.payload;
+    },
+
+    // Установка ошибки избранного
+    setFavoriteError: (state, action: PayloadAction<string | null>) => {
+      state.favoriteError = action.payload;
+    },
+
+    // Добавление трека в избранное
+    addToFavorites: (state, action: PayloadAction<Track>) => {
+      const track = action.payload;
+
+      // Добавляем трек в массив избранных, если его там нет
+      if (!state.favoriteTracks.some((t) => t._id === track._id)) {
+        state.favoriteTracks.push({
+          ...track,
+          is_liked: true,
+          likes_count: (track.likes_count || 0) + 1,
+        });
+      }
+
+      // Добавляем ID трека в массив, если его там нет
+      if (!state.likedTrackIds.includes(track._id)) {
+        state.likedTrackIds.push(track._id);
+      }
+
+      // Обновляем счетчик лайков
+      state.trackLikesCount[track._id] =
+        (state.trackLikesCount[track._id] || 0) + 1;
+
+      // Обновляем текущий трек, если это он
+      if (state.currentTrack && state.currentTrack._id === track._id) {
+        state.currentTrack = {
+          ...state.currentTrack,
+          is_liked: true,
+          likes_count: (state.currentTrack.likes_count || 0) + 1,
+        };
+      }
+
+      // Обновляем треки в плейлистах
+      state.playlist = state.playlist.map((t) =>
+        t._id === track._id
+          ? { ...t, is_liked: true, likes_count: (t.likes_count || 0) + 1 }
+          : t,
+      );
+
+      state.filteredPlaylist = state.filteredPlaylist.map((t) =>
+        t._id === track._id
+          ? { ...t, is_liked: true, likes_count: (t.likes_count || 0) + 1 }
+          : t,
+      );
+
+      state.shuffledPlaylist = state.shuffledPlaylist.map((t) =>
+        t._id === track._id
+          ? { ...t, is_liked: true, likes_count: (t.likes_count || 0) + 1 }
+          : t,
+      );
+    },
+
+    // Удаление трека из избранного
+    removeFromFavorites: (state, action: PayloadAction<number>) => {
+      const trackId = action.payload;
+
+      // Удаляем трек из массива избранных
+      state.favoriteTracks = state.favoriteTracks.filter(
+        (track) => track._id !== trackId,
+      );
+
+      // Удаляем ID трека из массива
+      state.likedTrackIds = state.likedTrackIds.filter((id) => id !== trackId);
+
+      // Обновляем счетчик лайков
+      const currentCount = state.trackLikesCount[trackId] || 0;
+      state.trackLikesCount[trackId] = Math.max(0, currentCount - 1);
+
+      // Обновляем текущий трек, если это он
+      if (state.currentTrack && state.currentTrack._id === trackId) {
+        state.currentTrack = {
+          ...state.currentTrack,
+          is_liked: false,
+          likes_count: Math.max(0, (state.currentTrack.likes_count || 1) - 1),
+        };
+      }
+
+      // Обновляем треки в плейлистах
+      state.playlist = state.playlist.map((t) =>
+        t._id === trackId
+          ? {
+              ...t,
+              is_liked: false,
+              likes_count: Math.max(0, (t.likes_count || 1) - 1),
+            }
+          : t,
+      );
+
+      state.filteredPlaylist = state.filteredPlaylist.map((t) =>
+        t._id === trackId
+          ? {
+              ...t,
+              is_liked: false,
+              likes_count: Math.max(0, (t.likes_count || 1) - 1),
+            }
+          : t,
+      );
+
+      state.shuffledPlaylist = state.shuffledPlaylist.map((t) =>
+        t._id === trackId
+          ? {
+              ...t,
+              is_liked: false,
+              likes_count: Math.max(0, (t.likes_count || 1) - 1),
+            }
+          : t,
+      );
+    },
+
+    // Тоггл лайка (общий метод)
+    toggleLike: (
+      state,
+      action: PayloadAction<{ trackId: number; isLiked: boolean }>,
+    ) => {
+      const { trackId, isLiked } = action.payload;
+
+      if (isLiked) {
+        // Находим трек для добавления
+        const trackToAdd = [
+          ...state.playlist,
+          ...state.filteredPlaylist,
+          ...state.shuffledPlaylist,
+          state.currentTrack,
+        ].find((t) => t && t._id === trackId);
+
+        if (trackToAdd) {
+          // Используем существующий редуктор для добавления
+          trackSlice.caseReducers.addToFavorites(state, {
+            type: 'tracks/addToFavorites',
+            payload: trackToAdd,
+          });
+        }
+      } else {
+        // Используем существующий редуктор для удаления
+        trackSlice.caseReducers.removeFromFavorites(state, {
+          type: 'tracks/removeFromFavorites',
+          payload: trackId,
+        });
+      }
+    },
+
+    // Обновление счетчика лайков для трека
+    updateTrackLikes: (
+      state,
+      action: PayloadAction<{
+        trackId: number;
+        likesCount: number;
+        isLiked: boolean;
+      }>,
+    ) => {
+      const { trackId, likesCount, isLiked } = action.payload;
+
+      state.trackLikesCount[trackId] = likesCount;
+
+      if (isLiked) {
+        // Добавляем ID если его нет
+        if (!state.likedTrackIds.includes(trackId)) {
+          state.likedTrackIds.push(trackId);
+        }
+      } else {
+        // Удаляем ID если есть
+        state.likedTrackIds = state.likedTrackIds.filter(
+          (id) => id !== trackId,
+        );
+      }
+
+      // Обновляем текущий трек
+      if (state.currentTrack && state.currentTrack._id === trackId) {
+        state.currentTrack = {
+          ...state.currentTrack,
+          is_liked: isLiked,
+          likes_count: likesCount,
+        };
+      }
+
+      // Обновляем треки в плейлистах
+      const updateTrackInArray = (track: Track) =>
+        track._id === trackId
+          ? { ...track, is_liked: isLiked, likes_count: likesCount }
+          : track;
+
+      state.playlist = state.playlist.map(updateTrackInArray);
+      state.filteredPlaylist = state.filteredPlaylist.map(updateTrackInArray);
+      state.shuffledPlaylist = state.shuffledPlaylist.map(updateTrackInArray);
+      state.favoriteTracks = state.favoriteTracks.map(updateTrackInArray);
+    },
+
+    // Очистка состояния избранного при выходе
+    clearFavorites: (state) => {
+      state.favoriteTracks = [];
+      state.likedTrackIds = [];
+      state.trackLikesCount = {};
+      state.isFavoriteLoading = false;
+      state.favoriteError = null;
+    },
   },
 });
 
@@ -374,6 +609,15 @@ export const {
   prevTrack,
   setProgress,
   clearTrack,
+  // Новые экшены
+  setFavoriteTracks,
+  setFavoriteLoading,
+  setFavoriteError,
+  addToFavorites,
+  removeFromFavorites,
+  toggleLike,
+  updateTrackLikes,
+  clearFavorites,
 } = trackSlice.actions;
 
 export const trackSliceReducer = trackSlice.reducer;

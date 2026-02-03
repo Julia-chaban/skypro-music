@@ -1,3 +1,4 @@
+// app/components/Sidebar/sidebar.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -195,7 +196,14 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
           <p className={styles.sidebar__personalName}>
             {user ? user.username : 'Гость'}
           </p>
-          <div className={styles.sidebar__icon} onClick={handleLogout}>
+          <div
+            className={styles.sidebar__icon}
+            onClick={handleLogout}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogout()}
+            title="Выйти"
+          >
             <svg>
               <use xlinkHref="/icon/logout.svg"></use>
             </svg>
@@ -246,14 +254,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                           }
                         }}
                       />
-                      <div className={styles.selection__overlay}>
-                        <span className={styles.selection__name}>
-                          {selection.name}
-                        </span>
-                        <span className={styles.selection__author}>
-                          {selection.author}
-                        </span>
-                      </div>
+                      {/* УДАЛИЛ ЛИШНИЙ БЛОК С НАЗВАНИЕМ ПОДБОРКИ */}
                     </div>
                   </Link>
                 </div>

@@ -1,8 +1,10 @@
+// app/components/Navigation/navigation.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/app/context/AuthContext';
 import styles from './navigation.module.css';
 
 interface NavigationProps {
@@ -13,6 +15,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -49,6 +52,11 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
     if (onSidebarToggle) {
       onSidebarToggle(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    closeAllMenus();
   };
 
   return (
@@ -92,23 +100,39 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+            {isAuthenticated && (
+              <li className={styles.menu__item}>
+                <Link
+                  href="/favorites"
+                  className={styles.menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Мои треки
+                </Link>
+              </li>
+            )}
             <li className={styles.menu__item}>
-              <Link
-                href="#"
-                className={styles.menu__link}
-                onClick={closeAllMenus}
-              >
-                Мои треки
-              </Link>
-            </li>
-            <li className={styles.menu__item}>
-              <Link
-                href="/auth/signin"
-                className={styles.menu__link}
-                onClick={closeAllMenus}
-              >
-                Выйти
-              </Link>
+              {isAuthenticated ? (
+                <button
+                  className={styles.menu__link}
+                  onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Выйти
+                </button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className={styles.menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Войти
+                </Link>
+              )}
             </li>
           </ul>
         </div>
@@ -128,23 +152,39 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+            {isAuthenticated && (
+              <li className={styles.mobile_menu__item}>
+                <Link
+                  href="/favorites"
+                  className={styles.mobile_menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Мои треки
+                </Link>
+              </li>
+            )}
             <li className={styles.mobile_menu__item}>
-              <Link
-                href="#"
-                className={styles.mobile_menu__link}
-                onClick={closeAllMenus}
-              >
-                Мои треки
-              </Link>
-            </li>
-            <li className={styles.mobile_menu__item}>
-              <Link
-                href="/auth/signin"
-                className={styles.mobile_menu__link}
-                onClick={closeAllMenus}
-              >
-                Выйти
-              </Link>
+              {isAuthenticated ? (
+                <button
+                  className={styles.mobile_menu__link}
+                  onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Выйти
+                </button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className={styles.mobile_menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Войти
+                </Link>
+              )}
             </li>
           </ul>
         </div>

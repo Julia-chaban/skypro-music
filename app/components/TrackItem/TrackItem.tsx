@@ -1,6 +1,7 @@
+// app/components/TrackItem/TrackItem.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo, memo, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/features/store';
 import {
   setCurrentTrack,
@@ -9,7 +10,8 @@ import {
   setCurrentTrackIndex,
 } from '@/store/features/trackSlice';
 import { Track } from '@/types/track';
-import { formatDuration } from '@/utils/formatDuration';
+import { useFormatTime } from '@/app/hooks/useFormatTime';
+import { useLikeTrack } from '@/app/hooks/useLikeTrack';
 import styles from './TrackItem.module.css';
 
 interface TrackItemProps {
@@ -18,47 +20,135 @@ interface TrackItemProps {
   tracks: Track[];
 }
 
-export default function TrackItem({ track, index, tracks }: TrackItemProps) {
-  const [isLiked, setIsLiked] = useState(false);
-
+const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
   const dispatch = useAppDispatch();
   const { currentTrack, isPlaying } = useAppSelector((state) => state.tracks);
 
-  const isCurrentTrack = currentTrack?._id === track._id;
-  const isCurrentlyPlaying = isCurrentTrack && isPlaying;
+  // Используем хук для работы с лайками
+  const {
+    isLiked,
+    isLoading: likeLoading,
+    error: likeError,
+    toggleLike,
+  } = useLikeTrack(track);
+  const { formatDuration } = useFormatTime();
 
-  const handleTrackClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const [showError, setShowError] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const isProcessingClick = useRef(false); // Защита от двойного клика
 
-    if (isCurrentTrack) {
-      dispatch(setIsPlaying(!isPlaying));
-    } else {
-      dispatch(setPlaylist(tracks));
-      dispatch(setCurrentTrackIndex(index));
-      dispatch(setCurrentTrack(track));
-      dispatch(setIsPlaying(true));
+  // Мемоизация вычисляемых значений
+  const isCurrentTrack = useMemo(
+    () => currentTrack?._id === track._id,
+    [currentTrack, track],
+  );
+  const isCurrentlyPlaying = useMemo(
+    () => isCurrentTrack && isPlaying,
+    [isCurrentTrack, isPlaying],
+  );
+
+  // Мемоизация форматированной длительности
+  const formattedDuration = useMemo(
+    () => formatDuration(track.duration_in_seconds),
+    [track.duration_in_seconds, formatDuration],
+  );
+
+  // Мемоизация класса для иконки
+  const likeClassName = useMemo(() => {
+    const classes = [styles.track__timeSvg];
+
+    if (isAnimating) {
+      classes.push(styles.animating);
     }
-  };
 
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLiked(!isLiked);
-  };
+    return classes.join(' ');
+  }, [isAnimating]);
+
+  const handleTrackClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      // Защита от двойного клика
+      if (isProcessingClick.current) return;
+      isProcessingClick.current = true;
+
+      try {
+        if (isCurrentTrack) {
+          // Тот же трек - просто переключаем воспроизведение
+          dispatch(setIsPlaying(!isPlaying));
+        } else {
+          // Новый трек - устанавливаем его
+          dispatch(setPlaylist(tracks));
+          dispatch(setCurrentTrackIndex(index));
+          dispatch(setCurrentTrack(track));
+          dispatch(setIsPlaying(true));
+        }
+      } catch (error) {
+        console.error('Ошибка при клике на трек:', error);
+      } finally {
+        // Сбрасываем флаг через небольшой таймаут
+        setTimeout(() => {
+          isProcessingClick.current = false;
+        }, 300);
+      }
+    },
+    [isCurrentTrack, isPlaying, dispatch, tracks, index, track],
+  );
+
+  const handleLikeClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (likeLoading) return;
+
+      // Запускаем анимацию
+      setIsAnimating(true);
+
+      try {
+        await toggleLike();
+
+        // Показываем ошибку, если она есть
+        if (likeError) {
+          setShowError(true);
+          setTimeout(() => setShowError(false), 3000);
+        }
+      } catch (err) {
+        console.error('Ошибка при обработке лайка:', err);
+      } finally {
+        // Останавливаем анимацию через 500ms
+        setTimeout(() => setIsAnimating(false), 500);
+      }
+    },
+    [toggleLike, likeError, likeLoading],
+  );
+
+  // Мемоизация JSX для иконки трека
+  const trackIcon = useMemo(() => {
+    if (!isCurrentlyPlaying) {
+      return (
+        <svg className={styles.track__titleSvg}>
+          <use xlinkHref="/icon/note.svg"></use>
+        </svg>
+      );
+    }
+    return <div className={styles.track__titleImageDotPulsing} />;
+  }, [isCurrentlyPlaying]);
+
+  // Мемоизация JSX для ошибки
+  const errorTooltip = useMemo(
+    () =>
+      showError && likeError ? (
+        <div className={styles.errorTooltip}>{likeError}</div>
+      ) : null,
+    [showError, likeError],
+  );
 
   return (
     <div className={styles.playlist__item} onClick={handleTrackClick}>
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
-          <div className={styles.track__titleImage}>
-            {!isCurrentlyPlaying ? (
-              <svg className={styles.track__titleSvg}>
-                <use xlinkHref="/icon/note.svg"></use>
-              </svg>
-            ) : (
-              <div className={styles.track__titleImageDotPulsing} />
-            )}
-          </div>
+          <div className={styles.track__titleImage}>{trackIcon}</div>
           <div className={styles.track__titleText}>
             <span className={styles.track__titleLink}>
               {track.name}
@@ -76,17 +166,26 @@ export default function TrackItem({ track, index, tracks }: TrackItemProps) {
         </div>
 
         <div className={styles.track__time}>
-          <svg
-            className={`${styles.track__timeSvg} ${isLiked ? styles.track__timeSvgLiked : ''}`}
-            onClick={handleLikeClick}
-          >
-            <use xlinkHref="/icon/like.svg"></use>
-          </svg>
-          <span className={styles.track__timeText}>
-            {formatDuration(track.duration_in_seconds)}
-          </span>
+          <div className={styles.likeContainer}>
+            <svg
+              className={likeClassName}
+              onClick={handleLikeClick}
+              style={likeLoading ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
+              <use
+                xlinkHref={isLiked ? '/icon/dislike.svg' : '/icon/like.svg'}
+              ></use>
+            </svg>
+
+            {/* Сообщение об ошибки */}
+            {errorTooltip}
+          </div>
+
+          <span className={styles.track__timeText}>{formattedDuration}</span>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default memo(TrackItem);
