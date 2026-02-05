@@ -1,7 +1,7 @@
 // hooks/useLikeTrack.ts
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/features/store';
 import { likeService } from '@/app/services/likeService';
 import { Track } from '@/types/track';
@@ -10,6 +10,7 @@ import {
   removeFromFavorites,
   updateTrackLikes,
   setFavoriteError,
+  setFavoriteTracks,
 } from '@/store/features/trackSlice';
 import { useAuth } from '@/app/context/AuthContext';
 
@@ -27,18 +28,46 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
   const { isAuthenticated } = useAuth();
 
   // Получаем состояние из Redux с мемоизацией
-  const { likedTrackIds, trackLikesCount } = useAppSelector(
+  const { likedTrackIds, trackLikesCount, favoriteTracks } = useAppSelector(
     (state) => state.tracks,
   );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasChecked, setHasChecked] = useState(false);
 
-  // Мемоизируем проверку лайка (теперь проверяем массив)
+  // При монтировании компонента проверяем статус лайка - ТОЛЬКО если авторизован
+  useEffect(() => {
+    const checkLikes = async () => {
+      if (isAuthenticated && !hasChecked) {
+        try {
+          // Загружаем избранные треки один раз при загрузке приложения
+          const favorites = await likeService.getFavoriteTracks();
+          dispatch(setFavoriteTracks(favorites));
+          setHasChecked(true);
+        } catch (error) {
+          console.error('Ошибка загрузки избранных треков:', error);
+          setHasChecked(true);
+        }
+      } else if (!isAuthenticated) {
+        // Если не авторизован, просто отмечаем что проверка выполнена
+        setHasChecked(true);
+      }
+    };
+
+    checkLikes();
+  }, [isAuthenticated, hasChecked, dispatch]);
+
+  // Мемоизируем проверку лайка
   const isLiked = useMemo(() => {
     if (!track) return false;
-    return likedTrackIds.includes(track._id);
-  }, [track, likedTrackIds]);
+
+    // Проверяем в нескольких местах для надежности
+    return (
+      likedTrackIds.includes(track._id) ||
+      favoriteTracks.some((favTrack) => favTrack._id === track._id)
+    );
+  }, [track, likedTrackIds, favoriteTracks]);
 
   // Мемоизируем количество лайков
   const likesCount = useMemo(() => {
@@ -48,19 +77,52 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
 
   // Мемоизируем проверку статуса лайка на сервере
   const checkLikeStatus = useCallback(async (): Promise<boolean> => {
-    if (!track || !isAuthenticated) return false;
-
-    try {
-      return await likeService.checkIsLiked(track._id);
-    } catch (err) {
-      console.error('Ошибка проверки статуса лайка:', err);
+    if (!track || !isAuthenticated) {
+      // Если не авторизован, возвращаем false
       return false;
     }
-  }, [track, isAuthenticated]);
+
+    try {
+      // Используем существующий метод из likeService
+      const isLikedOnServer = await likeService.checkIsLiked(track._id);
+
+      // Синхронизируем с локальным состоянием
+      if (isLikedOnServer && !likedTrackIds.includes(track._id)) {
+        // Добавляем в локальное состояние
+        dispatch(
+          updateTrackLikes({
+            trackId: track._id,
+            likesCount: track.likes_count || 1,
+            isLiked: true,
+          }),
+        );
+      } else if (!isLikedOnServer && likedTrackIds.includes(track._id)) {
+        // Удаляем из локального состояния если на сервере нет лайка
+        dispatch(
+          updateTrackLikes({
+            trackId: track._id,
+            likesCount: Math.max(0, (track.likes_count || 1) - 1),
+            isLiked: false,
+          }),
+        );
+      }
+
+      return isLikedOnServer;
+    } catch (err) {
+      console.error('Ошибка проверки статуса лайка:', err);
+      // При ошибке возвращаем текущее локальное состояние
+      return isLiked;
+    }
+  }, [track, isAuthenticated, likedTrackIds, isLiked, dispatch]);
 
   // Мемоизируем основную функцию для тоггла лайка
   const toggleLike = useCallback(async (): Promise<void> => {
-    if (!track || !isAuthenticated) {
+    if (!track) {
+      setError('Трек не найден');
+      return;
+    }
+
+    if (!isAuthenticated) {
       setError('Для добавления в избранное необходимо авторизоваться');
       return;
     }
@@ -109,8 +171,16 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
       }
 
       // Устанавливаем ошибку
-      const errorMessage =
-        err.message || 'Произошла ошибка при обновлении лайка';
+      let errorMessage = 'Произошла ошибка при обновлении лайка';
+
+      if (err.message?.includes('Failed to fetch')) {
+        errorMessage = 'Ошибка соединения с сервером';
+      } else if (err.status === 401) {
+        errorMessage = 'Сессия истекла. Пожалуйста, войдите снова.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
       setError(errorMessage);
       dispatch(setFavoriteError(errorMessage));
 
@@ -130,38 +200,5 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
       checkLikeStatus,
     }),
     [isLiked, likesCount, isLoading, error, toggleLike, checkLikeStatus],
-  );
-};
-
-// Хук для работы с избранными треками с оптимизацией
-export const useFavorites = () => {
-  const dispatch = useAppDispatch();
-  const { favoriteTracks, isFavoriteLoading, favoriteError } = useAppSelector(
-    (state) => state.tracks,
-  );
-  const { isAuthenticated } = useAuth();
-
-  const loadFavorites = useCallback(async () => {
-    if (!isAuthenticated) {
-      return [];
-    }
-
-    try {
-      const tracks = await likeService.getFavoriteTracks();
-      return tracks;
-    } catch (error) {
-      console.error('Ошибка загрузки избранного:', error);
-      throw error;
-    }
-  }, [isAuthenticated]);
-
-  return useMemo(
-    () => ({
-      favoriteTracks,
-      isLoading: isFavoriteLoading,
-      error: favoriteError,
-      loadFavorites,
-    }),
-    [favoriteTracks, isFavoriteLoading, favoriteError, loadFavorites],
   );
 };

@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, [clearAuthData]);
 
-  // Редирект в зависимости от авторизации
+  // Редирект в зависимости от авторизации - ТОЛЬКО для защищенных маршрутов
   useEffect(() => {
     if (isCheckingAuth) return;
 
@@ -95,23 +95,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isCheckingAuth,
     });
 
-    const publicRoutes = ['/auth/signin', '/auth/signup'];
+    // Определяем публичные маршруты
+    const publicRoutes = ['/', '/auth/signin', '/auth/signup'];
     const isPublicRoute = publicRoutes.includes(pathname);
+
+    // Защищенные маршруты (требуют авторизации)
+    const protectedRoutes = ['/favorites'];
+    const isProtectedRoute = protectedRoutes.includes(pathname);
 
     if (isCheckingAuth) return;
 
-    if (!isAuthenticated && !isPublicRoute) {
-      console.log('Redirecting to signin - not authenticated');
+    // Редирект только если пользователь не авторизован И находится на защищенном маршруте
+    if (!isAuthenticated && isProtectedRoute) {
+      console.log(
+        'Redirecting to signin - not authenticated on protected route',
+      );
       router.push('/auth/signin');
       return;
     }
 
-    if (isAuthenticated && isPublicRoute) {
+    // Редирект если авторизован и на странице входа/регистрации
+    if (
+      isAuthenticated &&
+      (pathname === '/auth/signin' || pathname === '/auth/signup')
+    ) {
       console.log('Redirecting to home - already authenticated');
       router.push('/');
       return;
     }
   }, [pathname, isAuthenticated, isCheckingAuth, router]);
+
+  // Остальные функции (login, signup, logout) остаются без изменений
+  // ... (ваш существующий код для login, signup, logout)
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -124,7 +139,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           password: password.trim(),
         };
 
-        // Получаем токены
         const tokenResponse = await fetch(
           'https://webdev-music-003b5b991590.herokuapp.com/user/token/',
           {
@@ -154,7 +168,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           throw new Error('Неверный формат ответа от сервера');
         }
 
-        // Получаем данные пользователя
         const userResponse = await fetch(
           'https://webdev-music-003b5b991590.herokuapp.com/user/login/',
           {
@@ -179,7 +192,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         console.log('User data:', userData);
 
-        // Сохраняем данные
         saveAuthData(userData, tokens.access, tokens.refresh);
         setUser(userData);
 
@@ -245,14 +257,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = useCallback(() => {
     console.log('Logging out');
 
-    // Очищаем состояние
     clearAuthData();
     setUser(null);
 
-    // Очищаем избранное в Redux
     dispatch(clearFavorites());
 
-    // Если находимся на странице избранного, редирект на главную
     if (pathname === '/favorites') {
       router.push('/');
     } else {

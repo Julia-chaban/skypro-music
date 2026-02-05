@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,css,md}\""
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test": "jest"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
@@ -23,6 +24,8 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^16.0.10",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/classnames": "^2.3.0",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -32,6 +35,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
     "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5"

@@ -15,7 +15,8 @@ export const likeService = {
       return response.tracks || [];
     } catch (error) {
       console.error('Ошибка получения избранных треков:', error);
-      throw error;
+      // Возвращаем пустой массив при ошибке
+      return [];
     }
   },
 
@@ -58,6 +59,7 @@ export const likeService = {
       return favorites.some((track) => track._id === trackId);
     } catch (error) {
       console.error('Ошибка проверки лайка:', error);
+      // Вместо того чтобы бросать ошибку, возвращаем false
       return false;
     }
   },

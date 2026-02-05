@@ -103,129 +103,98 @@ export default function FavoritesPage() {
     return `${minutes} мин`;
   }, [favoriteTracks]);
 
-  // Мемоизируем JSX для состояния загрузки
-  const loadingContent = useMemo(
-    () => (
+  // Рендерим loading только если идет проверка авторизации
+  if (authLoading || localLoading) {
+    return (
       <MainLayout>
         <div className={styles.loadingContainer}>
           <div className={styles.loadingSpinner}></div>
           <p>Загрузка избранных треков...</p>
         </div>
       </MainLayout>
-    ),
-    [],
-  );
-
-  if (authLoading || localLoading) {
-    return loadingContent;
+    );
   }
 
+  // Если не авторизован, показываем ничего или редирект произойдет
   if (!isAuthenticated) {
-    return null; // Редирект уже произойдет
+    return null;
   }
 
-  // Мемоизируем JSX для заголовка
-  const headerContent = useMemo(
-    () => (
-      <div className={styles.favoritesHeader}>
-        <h1 className={styles.favoritesTitle}>Мои треки</h1>
-        <div className={styles.favoritesStats}>
-          <span className={styles.tracksCount}>
-            {favoriteTracks.length} треков
-          </span>
-          <span className={styles.duration}>{formatTotalDuration}</span>
-        </div>
-      </div>
-    ),
-    [favoriteTracks.length, formatTotalDuration],
-  );
-
-  // Мемоизируем JSX для ошибки
-  const errorContent = useMemo(
-    () =>
-      (favoriteError || localError) && (
-        <div className={styles.errorAlert}>
-          <p>{favoriteError || localError}</p>
-          <button onClick={loadFavoriteTracks} className={styles.retryButton}>
-            Повторить
-          </button>
-        </div>
-      ),
-    [favoriteError, localError, loadFavoriteTracks],
-  );
-
-  // Мемоизируем JSX для пустого состояния
-  const emptyStateContent = useMemo(
-    () =>
-      favoriteTracks.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyStateIcon}>
-            <svg>
-              <use xlinkHref="/icon/like.svg"></use>
-            </svg>
-          </div>
-          <h2 className={styles.emptyStateTitle}>Нет избранных треков</h2>
-          <p className={styles.emptyStateText}>
-            Добавляйте треки в избранное, нажимая на иконку сердца
-          </p>
-        </div>
-      ),
-    [favoriteTracks.length],
-  );
-
-  // Мемоизируем JSX для списка треков
-  const trackListContent = useMemo(
-    () =>
-      favoriteTracks.length > 0 && (
-        <div className={styles.favoritesList}>
-          <div className={styles.trackListHeader}>
-            <div className={styles.headerNumber}>№</div>
-            <div className={styles.headerTitle}>НАЗВАНИЕ</div>
-            <div className={styles.headerAlbum}>АЛЬБОМ</div>
-            <div className={styles.headerActions}>ДЕЙСТВИЯ</div>
-            <div className={styles.headerDuration}>
-              <svg className={styles.durationIcon}>
-                <use xlinkHref="/icon/time.svg"></use>
-              </svg>
-            </div>
-          </div>
-
-          <div className={styles.trackListContent}>
-            {favoriteTracks.map((track, index) => (
-              <div key={track._id} className={styles.favoriteTrackItem}>
-                <TrackItem
-                  track={track}
-                  index={index}
-                  tracks={favoriteTracks}
-                />
-
-                <div className={styles.trackActions}>
-                  <button
-                    className={styles.removeButton}
-                    onClick={() => handleRemoveFromFavorites(track._id)}
-                    title="Удалить из избранного"
-                    aria-label="Удалить из избранного"
-                  >
-                    <svg className={styles.removeIcon}>
-                      <use xlinkHref="/icon/delete.svg"></use>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ),
-    [favoriteTracks, handleRemoveFromFavorites],
-  );
-
+  // Теперь основной рендеринг
   return (
     <MainLayout pageTitle="Мои треки">
       <div className={styles.favoritesPage}>
-        {headerContent}
-        {errorContent}
-        {emptyStateContent}
-        {trackListContent}
+        <div className={styles.favoritesHeader}>
+          <h1 className={styles.favoritesTitle}>Мои треки</h1>
+          <div className={styles.favoritesStats}>
+            <span className={styles.tracksCount}>
+              {favoriteTracks.length} треков
+            </span>
+            <span className={styles.duration}>{formatTotalDuration}</span>
+          </div>
+        </div>
+
+        {(favoriteError || localError) && (
+          <div className={styles.errorAlert}>
+            <p>{favoriteError || localError}</p>
+            <button onClick={loadFavoriteTracks} className={styles.retryButton}>
+              Повторить
+            </button>
+          </div>
+        )}
+
+        {favoriteTracks.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyStateIcon}>
+              <svg>
+                <use xlinkHref="/icon/like.svg"></use>
+              </svg>
+            </div>
+            <h2 className={styles.emptyStateTitle}>Нет избранных треков</h2>
+            <p className={styles.emptyStateText}>
+              Добавляйте треки в избранное, нажимая на иконку сердца
+            </p>
+          </div>
+        ) : (
+          <div className={styles.favoritesList}>
+            <div className={styles.trackListHeader}>
+              <div className={styles.headerNumber}>№</div>
+              <div className={styles.headerTitle}>НАЗВАНИЕ</div>
+              <div className={styles.headerAlbum}>АЛЬБОМ</div>
+              <div className={styles.headerActions}>ДЕЙСТВИЯ</div>
+              <div className={styles.headerDuration}>
+                <svg className={styles.durationIcon}>
+                  <use xlinkHref="/icon/time.svg"></use>
+                </svg>
+              </div>
+            </div>
+
+            <div className={styles.trackListContent}>
+              {favoriteTracks.map((track, index) => (
+                <div key={track._id} className={styles.favoriteTrackItem}>
+                  <TrackItem
+                    track={track}
+                    index={index}
+                    tracks={favoriteTracks}
+                  />
+
+                  <div className={styles.trackActions}>
+                    <button
+                      className={styles.removeButton}
+                      onClick={() => handleRemoveFromFavorites(track._id)}
+                      title="Удалить из избранного"
+                      aria-label="Удалить из избранного"
+                    >
+                      <svg className={styles.removeIcon}>
+                        <use xlinkHref="/icon/delete.svg"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
