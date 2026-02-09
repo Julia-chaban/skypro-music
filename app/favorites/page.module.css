@@ -1,281 +1,505 @@
-/* app/favorites/page.module.css */
-.favoritesPage {
-    padding: 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+/* Центральный блок как на главной */
+.centerblock {
+    width: auto;
+    -webkit-box-flex: 3;
+    -ms-flex-positive: 3;
+    flex-grow: 3;
+    padding: 20px 40px 20px 40px;
+    box-sizing: border-box;
 }
 
-.favoritesHeader {
-    margin-bottom: 40px;
+.centerblock__search {
+    width: 100%;
+    border-bottom: 1px solid #4e4e4e;
+    margin-bottom: 51px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
-.favoritesTitle {
+.search__svg {
+    width: 17px;
+    height: 17px;
+    margin-right: 5px;
+    stroke: #ffffff;
+    fill: transparent;
+}
+
+.search__text {
+    -webkit-box-flex: 100;
+    -ms-flex-positive: 100;
+    flex-grow: 100;
+    background-color: transparent;
+    border: none;
+    padding: 13px 10px 14px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #ffffff;
+}
+
+.search__text::-webkit-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text:-ms-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text::-ms-input-placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.search__text::placeholder {
+    background-color: transparent;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.centerblock__h2 {
     font-style: normal;
     font-weight: 400;
     font-size: 64px;
     line-height: 72px;
     letter-spacing: -0.8px;
-    margin-bottom: 20px;
-    color: #ffffff;
+    margin-bottom: 45px;
+    color: white;
 }
 
-.favoritesStats {
+.centerblock__filter {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    gap: 30px;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
+    margin-bottom: 51px;
 }
 
-.tracksCount,
-.duration {
+.filter__title {
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
     line-height: 24px;
-    color: #b672ff;
+    margin-right: 15px;
+    color: white;
 }
 
-.loadingContainer {
+.filter__button {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    border: 1px solid #ffffff;
+    border-radius: 60px;
+    padding: 6px 20px;
+    color: white;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.filter__button:not(:last-child) {
+    margin-right: 10px;
+}
+
+.filter__button:hover {
+    border-color: #d9b6ff;
+    color: #d9b6ff;
+    cursor: pointer;
+}
+
+.filter__button:active {
+    border-color: #ad61ff;
+    color: #ad61ff;
+    cursor: pointer;
+}
+
+.centerblock__content {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+
+.content__title {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.content__playlist {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 400px);
+}
+
+.content__playlist::-webkit-scrollbar {
+    width: 4px;
+}
+
+.content__playlist::-webkit-scrollbar-track {
+    background-color: rgba(75, 73, 73, 1);
+    border-radius: 2px;
+}
+
+.content__playlist::-webkit-scrollbar-thumb {
+    background-color: white;
+    border-radius: 2px;
+}
+
+.playlistTitle__col {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 2px;
+    color: #696969;
+    text-transform: uppercase;
+}
+
+.col01 {
+    width: 447px;
+}
+
+.col02 {
+    width: 321px;
+}
+
+.col03 {
+    width: 245px;
+}
+
+.col04 {
+    width: 60px;
+    text-align: end;
+}
+
+.playlistTitle__svg {
+    width: 12px;
+    height: 12px;
+    fill: transparent;
+    stroke: #696969;
+}
+
+.trackItemWrapper {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trackItemWrapper:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Стили для кнопки удаления внутри TrackItem */
+.trackItemWrapper :global(.deleteButton) {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.trackItemWrapper:hover :global(.deleteButton) {
+    opacity: 1;
+}
+
+.loading {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 50vh;
-    gap: 20px;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
 }
 
 .loadingSpinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(182, 114, 255, 0.3);
-    border-top-color: #b672ff;
+    width: 40px;
+    height: 40px;
+    margin: 20px auto 0;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #b672ff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
         transform: rotate(360deg);
     }
 }
 
-.errorAlert {
-    background: rgba(255, 77, 77, 0.1);
-    border: 1px solid #ff4d4d;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 30px;
+.error {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    height: 200px;
+    color: #ff4d4d;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
 }
 
-.errorAlert p {
-    margin: 0;
-    color: #ff4d4d;
-    font-size: 14px;
+.empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
 }
 
 .retryButton {
-    background: #b672ff;
+    background-color: #b672ff;
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
+    padding: 10px 20px;
+    margin-top: 15px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
 }
 
 .retryButton:hover {
-    background: #9a48f1;
+    background-color: #9a5fdf;
 }
 
-.emptyState {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 50vh;
-    gap: 20px;
-    text-align: center;
-}
-
-.emptyStateIcon {
-    width: 80px;
-    height: 80px;
-    background: rgba(182, 114, 255, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.emptyStateIcon svg {
-    width: 40px;
-    height: 40px;
-    fill: #b672ff;
-    stroke: #b672ff;
-}
-
-.emptyStateTitle {
-    font-style: normal;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 32px;
-    color: #ffffff;
-    margin: 0;
-}
-
-.emptyStateText {
-    font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 24px;
-    color: #696969;
-    margin: 0;
-    max-width: 400px;
-}
-
-.trackListHeader {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
-    font-style: normal;
-    font-weight: 400;
+.mockInfo {
+    margin-top: 10px;
+    color: #b672ff;
     font-size: 14px;
-    line-height: 24px;
-    color: #696969;
-    text-transform: uppercase;
 }
 
-.headerNumber {
-    width: 5%;
+.mockWarning {
+    background-color: rgba(182, 114, 255, 0.1);
+    border: 1px solid #b672ff;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    color: #b672ff;
+    font-size: 14px;
     text-align: center;
 }
 
-.headerTitle {
-    width: 35%;
-    padding-left: 20px;
+.mockWarning:before {
+    content: "⚠️ ";
 }
 
-.headerAlbum {
-    width: 25%;
-}
+/* Добавьте в конец файла перед медиа-запросами: */
 
-.headerActions {
-    width: 10%;
-    text-align: center;
-}
-
-.headerDuration {
-    width: 25%;
-    text-align: right;
-    padding-right: 20px;
-}
-
-.durationIcon {
-    width: 16px;
-    height: 16px;
-    fill: #696969;
-}
-
-.favoriteTrackItem {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    position: relative;
-}
-
-.trackActions {
-    width: 10%;
-    display: flex;
-    justify-content: center;
-}
-
-.removeButton {
+.clearSearchButton {
     background: none;
     border: none;
+    color: #b3b3b3;
+    font-size: 20px;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    padding: 5px 10px;
+    margin-left: 10px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
 }
 
-.removeButton:hover {
-    background: rgba(255, 77, 77, 0.1);
+.clearSearchButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
-.removeIcon {
-    width: 16px;
-    height: 16px;
-    fill: #696969;
-    stroke: #696969;
-    transition: all 0.2s ease;
-}
-
-.removeButton:hover .removeIcon {
-    fill: #ff4d4d;
-    stroke: #ff4d4d;
-}
-
-/* Адаптивность */
+/* Улучшения для мобильных устройств */
 @media (max-width: 768px) {
-    .favoritesPage {
-        padding: 10px;
+    .centerblock__search {
+        position: relative;
     }
 
-    .favoritesTitle {
-        font-size: 48px;
-        line-height: 56px;
+    .clearSearchButton {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 0;
+    }
+}
+
+/* МЕДИА-ЗАПРОСЫ */
+@media (max-width: 1200px) {
+    .centerblock {
+        padding: 20px 40px 20px 40px;
+        width: auto;
     }
 
-    .trackListHeader {
-        font-size: 12px;
+    .col01 {
+        width: 320px;
     }
 
-    .headerAlbum {
-        display: none;
+    .col02 {
+        width: 220px;
     }
 
-    .headerTitle {
-        width: 50%;
+    .col03 {
+        width: 200px;
     }
 
-    .headerActions {
-        width: 15%;
+    .col04 {
+        width: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .centerblock {
+        padding: 20px 20px 20px 90px;
+        width: 100%;
     }
 
-    .headerDuration {
-        width: 30%;
+    .centerblock__search {
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .centerblock__h2 {
+        font-size: 32px;
+        line-height: 40px;
+        margin-bottom: 20px;
+        padding: 0 15px;
+    }
+
+    .centerblock__filter {
+        margin-bottom: 30px;
+        padding: 0 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .centerblock__content {
+        padding: 0 15px;
+    }
+
+    .col01 {
+        width: 220px;
+    }
+
+    .col02 {
+        width: 150px;
+    }
+
+    .col03 {
+        width: 120px;
+    }
+
+    .col04 {
+        width: 50px;
+    }
+
+    .content__playlist {
+        max-height: none;
     }
 }
 
 @media (max-width: 480px) {
-    .favoritesTitle {
-        font-size: 36px;
-        line-height: 44px;
+    .centerblock {
+        padding: 15px;
     }
 
-    .favoritesStats {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
+    .centerblock__search {
+        padding: 0 10px;
     }
 
-    .trackListHeader {
+    .centerblock__h2 {
+        font-size: 24px;
+        line-height: 32px;
+        padding: 0 10px;
+    }
+
+    .centerblock__filter {
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .filter__button {
+        font-size: 14px;
+        padding: 4px 12px;
+    }
+
+    .centerblock__content {
+        padding: 0 10px;
+    }
+
+    .content__title {
         display: none;
     }
 
-    .favoriteTrackItem {
-        flex-direction: column;
-        align-items: flex-start;
+    .loading,
+    .error,
+    .empty {
+        height: 150px;
+        padding: 15px;
+        font-size: 14px;
     }
 
-    .trackActions {
-        width: 100%;
-        justify-content: flex-end;
-        margin-top: 10px;
+    .retryButton {
+        padding: 8px 16px;
+        font-size: 13px;
     }
 }

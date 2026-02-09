@@ -1,7 +1,13 @@
-// app/components/TrackItem/TrackItem.tsx
 'use client';
 
-import React, { useState, useCallback, useMemo, memo, useRef } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  memo,
+  useRef,
+  useEffect,
+} from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/features/store';
 import {
   setCurrentTrack,
@@ -36,6 +42,14 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
   const [showError, setShowError] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const isProcessingClick = useRef(false); // Защита от двойного клика
+  const [isOnFavoritesPage, setIsOnFavoritesPage] = useState(false);
+
+  // Определяем, находимся ли на странице избранного
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsOnFavoritesPage(window.location.pathname === '/favorites');
+    }
+  }, []);
 
   // Мемоизация вычисляемых значений
   const isCurrentTrack = useMemo(
@@ -73,6 +87,15 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
       isProcessingClick.current = true;
 
       try {
+        // Проверяем наличие корректного track_file
+        const trackFile = track.track_file;
+        if (!trackFile || typeof trackFile !== 'string') {
+          console.warn(
+            'Трек не может быть воспроизведен: отсутствует аудиофайл',
+          );
+          return;
+        }
+
         if (isCurrentTrack) {
           // Тот же трек - просто переключаем воспроизведение
           dispatch(setIsPlaying(!isPlaying));
@@ -108,6 +131,13 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
       try {
         await toggleLike();
 
+        // Если мы на странице избранного и убираем лайк
+        if (isOnFavoritesPage && isLiked) {
+          // Трек будет автоматически удален из списка
+          console.log('Трек удален из избранного на странице /favorites');
+          // Redux обновит список через хуки и состояние
+        }
+
         // Показываем ошибку, если она есть
         if (likeError) {
           setShowError(true);
@@ -120,7 +150,7 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
         setTimeout(() => setIsAnimating(false), 500);
       }
     },
-    [toggleLike, likeError, likeLoading],
+    [toggleLike, likeError, likeLoading, isLiked, isOnFavoritesPage],
   );
 
   // Мемоизация JSX для иконки трека
@@ -143,6 +173,16 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
       ) : null,
     [showError, likeError],
   );
+
+  // Дебаг информация
+  console.log('TrackItem render:', {
+    trackId: track._id,
+    trackName: track.name,
+    isLiked,
+    likeLoading,
+    likeError,
+    isOnFavoritesPage,
+  });
 
   return (
     <div className={styles.playlist__item} onClick={handleTrackClick}>
@@ -171,6 +211,13 @@ const TrackItem = ({ track, index, tracks }: TrackItemProps) => {
               className={likeClassName}
               onClick={handleLikeClick}
               style={likeLoading ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+              title={
+                isOnFavoritesPage
+                  ? 'Удалить из избранного'
+                  : isLiked
+                    ? 'Убрать из избранного'
+                    : 'Добавить в избранное'
+              }
             >
               <use
                 xlinkHref={isLiked ? '/icon/dislike.svg' : '/icon/like.svg'}

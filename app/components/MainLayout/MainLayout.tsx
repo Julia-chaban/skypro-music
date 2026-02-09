@@ -14,7 +14,8 @@ interface MainLayoutProps {
 export default function MainLayout({ children, pageTitle }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleBurgerClick = (isOpen: boolean) => {
+  // Переименуем handleBurgerClick в handleSidebarToggle
+  const handleSidebarToggle = (isOpen: boolean) => {
     setIsSidebarOpen(isOpen);
   };
 
@@ -24,15 +25,12 @@ export default function MainLayout({ children, pageTitle }: MainLayoutProps) {
         <div className={styles.main}>
           {/* Навигация слева */}
           <Navigation
-            onBurgerClick={handleBurgerClick}
-            isSidebarOpen={isSidebarOpen}
+            onSidebarToggle={handleSidebarToggle}
             pageTitle={pageTitle}
           />
 
           {/* Центральный блок */}
-          <div className={styles.centerContent}>
-            {children} {/* Здесь Centerblock */}
-          </div>
+          <div className={styles.centerContent}>{children}</div>
 
           {/* Сайдбар справа */}
           <Sidebar isOpen={isSidebarOpen} />

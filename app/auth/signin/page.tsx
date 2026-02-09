@@ -31,7 +31,6 @@ export default function Signin() {
 
     try {
       await login(formData.email, formData.password);
-      // Редирект происходит внутри login функции в AuthContext
     } catch (error: any) {
       console.error('Ошибка авторизации:', error);
       setErrors([error.message || 'Произошла ошибка при авторизации']);

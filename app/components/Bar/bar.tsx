@@ -92,6 +92,41 @@ export default function Bar() {
     [currentTrack, likeLoading],
   );
 
+  // Функция для исправления URL трека
+  const fixTrackUrl = useCallback((trackFile: string | any): string => {
+    if (typeof trackFile !== 'string') {
+      console.error('Некорректный тип track_file:', typeof trackFile);
+      return '';
+    }
+
+    let trackUrl = trackFile.trim();
+
+    // Если URL уже полный, возвращаем как есть
+    if (
+      trackUrl.startsWith('http://') ||
+      trackUrl.startsWith('https://') ||
+      trackUrl.startsWith('/') ||
+      trackUrl.startsWith('blob:')
+    ) {
+      return trackUrl;
+    }
+
+    // Если это относительный путь, добавляем базовый URL
+    if (trackUrl) {
+      // Убираем лишние слэши в начале
+      trackUrl = trackUrl.replace(/^\/+/, '');
+
+      // Проверяем, содержит ли уже путь media/
+      if (trackUrl.startsWith('media/')) {
+        return `https://webdev-music-003b5b991590.herokuapp.com/${trackUrl}`;
+      } else {
+        return `https://webdev-music-003b5b991590.herokuapp.com/media/${trackUrl}`;
+      }
+    }
+
+    return '';
+  }, []);
+
   // Инициализация аудио - только один раз
   useEffect(() => {
     const audio = audioRef.current;
@@ -119,8 +154,9 @@ export default function Bar() {
       }
     };
 
-    const handleError = () => {
-      console.error('Ошибка аудио элемента:', audio.error);
+    const handleError = (e: Event) => {
+      const audioElement = e.target as HTMLAudioElement;
+      console.error('Ошибка аудио элемента:', audioElement.error);
       dispatch(setIsPlaying(false));
       setIsAudioReady(false);
     };
@@ -157,24 +193,16 @@ export default function Bar() {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
-    let trackUrl = '';
-    if (typeof currentTrack.track_file === 'string') {
-      trackUrl = currentTrack.track_file;
-    } else if (
-      currentTrack.track_file &&
-      typeof currentTrack.track_file === 'object'
-    ) {
-      trackUrl =
-        (currentTrack.track_file as any).url ||
-        (currentTrack.track_file as any).location ||
-        (currentTrack.track_file as any).file ||
-        '';
-    }
+    // Исправляем URL трека
+    const trackUrl = fixTrackUrl(currentTrack.track_file);
 
     if (!trackUrl) {
-      console.error('Некорректный URL трека:', currentTrack.track_file);
+      console.error('Некорректный URL трека для:', currentTrack.name);
+      dispatch(setIsPlaying(false));
       return;
     }
+
+    console.log('Загружаем трек:', currentTrack.name, 'URL:', trackUrl);
 
     // Если это тот же трек, только обновляем состояние
     const currentSrc = audio.src;
@@ -199,10 +227,7 @@ export default function Bar() {
       return;
     }
 
-    // Новый трек
-    console.log('Загружаем новый трек:', currentTrack.name);
-
-    // Сбрасываем флаг готовности
+    // Новый трек - сбрасываем флаг готовности
     setIsAudioReady(false);
 
     // Загружаем новый трек
@@ -229,7 +254,15 @@ export default function Bar() {
     return () => {
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
     };
-  }, [currentTrack, dispatch, volume, isLooping, isPlaying, isAudioReady]);
+  }, [
+    currentTrack,
+    dispatch,
+    volume,
+    isLooping,
+    isPlaying,
+    isAudioReady,
+    fixTrackUrl,
+  ]);
 
   // Управление громкостью
   useEffect(() => {

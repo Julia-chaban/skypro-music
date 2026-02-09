@@ -1,4 +1,3 @@
-// app/components/Navigation/navigation.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -16,6 +15,11 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
+
+  // ДОБАВЬТЕ ЭТОТ useEffect для логирования
+  useEffect(() => {
+    console.log('Navigation: isAuthenticated =', isAuthenticated);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -86,6 +90,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         <span className={styles.burger__line}></span>
       </div>
 
+      {/* ДЕСКТОПНОЕ МЕНЮ */}
       {!isMobile && (
         <div
           className={`${styles.nav__menu} ${isDesktopMenuOpen ? styles.active : ''}`}
@@ -100,6 +105,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+            {/* ВАЖНО: Проверяем isAuthenticated */}
             {isAuthenticated && (
               <li className={styles.menu__item}>
                 <Link
@@ -111,6 +117,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 </Link>
               </li>
             )}
+
             <li className={styles.menu__item}>
               {isAuthenticated ? (
                 <button
@@ -120,6 +127,12 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
+                    color: '#ffffff',
+                    fontSize: '16px',
+                    fontWeight: '400',
+                    padding: '0',
+                    textAlign: 'left',
+                    width: '100%',
                   }}
                 >
                   Выйти
@@ -138,6 +151,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         </div>
       )}
 
+      {/* МОБИЛЬНОЕ МЕНЮ */}
       {isMobile && (
         <div
           className={`${styles.nav__mobile_menu} ${isMobileMenuOpen ? styles.active : ''}`}
@@ -152,6 +166,8 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+
+            {/* ВАЖНО: Проверяем isAuthenticated */}
             {isAuthenticated && (
               <li className={styles.mobile_menu__item}>
                 <Link
@@ -163,6 +179,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 </Link>
               </li>
             )}
+
             <li className={styles.mobile_menu__item}>
               {isAuthenticated ? (
                 <button
@@ -172,6 +189,13 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
+                    color: '#ffffff',
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    padding: '12px 0',
+                    textAlign: 'center',
+                    width: '100%',
+                    borderBottom: '1px solid #333',
                   }}
                 >
                   Выйти

@@ -1,4 +1,3 @@
-// app/context/AuthContext.tsx
 'use client';
 
 import React, {
@@ -37,102 +36,94 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
 
   const isAuthenticated = !!user;
 
-  // Функция для сохранения данных в localStorage
   const saveAuthData = useCallback(
     (userData: User, accessToken: string, refreshToken: string) => {
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      try {
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        setUser(userData);
+      } catch (error) {
+        console.error('Ошибка сохранения данных', error);
+      }
     },
     [],
   );
 
-  // Функция для очистки данных из localStorage
   const clearAuthData = useCallback(() => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setUser(null);
+    } catch (error) {
+      console.error('Ошибка очистки данных', error);
+    }
   }, []);
 
-  // Проверка авторизации при загрузке
   useEffect(() => {
     const checkAuth = () => {
-      const storedUser = localStorage.getItem('user');
-      const accessToken = localStorage.getItem('accessToken');
+      try {
+        const storedUser = localStorage.getItem('user');
+        const accessToken = localStorage.getItem('accessToken');
 
-      console.log('Checking auth:', { storedUser, accessToken });
-
-      if (storedUser && accessToken) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          console.log('User restored from localStorage:', parsedUser);
-        } catch (error) {
-          console.error('Error parsing stored user:', error);
-          clearAuthData();
+        if (storedUser && accessToken) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser && parsedUser.email && parsedUser._id) {
+              setUser(parsedUser);
+            } else {
+              clearAuthData();
+            }
+          } catch (error) {
+            clearAuthData();
+          }
+        } else {
+          setUser(null);
         }
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setIsInitialized(true);
       }
-      setIsCheckingAuth(false);
     };
 
     checkAuth();
+
+    const intervalId = setInterval(() => {
+      const storedUser = localStorage.getItem('user');
+      const accessToken = localStorage.getItem('accessToken');
+
+      if (!storedUser || !accessToken) {
+        setUser(null);
+      }
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, [clearAuthData]);
 
-  // Редирект в зависимости от авторизации - ТОЛЬКО для защищенных маршрутов
   useEffect(() => {
-    if (isCheckingAuth) return;
+    if (!isInitialized) return;
 
-    console.log('Auth check:', {
-      pathname,
-      isAuthenticated,
-      isCheckingAuth,
-    });
-
-    // Определяем публичные маршруты
-    const publicRoutes = ['/', '/auth/signin', '/auth/signup'];
-    const isPublicRoute = publicRoutes.includes(pathname);
-
-    // Защищенные маршруты (требуют авторизации)
     const protectedRoutes = ['/favorites'];
     const isProtectedRoute = protectedRoutes.includes(pathname);
 
-    if (isCheckingAuth) return;
-
-    // Редирект только если пользователь не авторизован И находится на защищенном маршруте
     if (!isAuthenticated && isProtectedRoute) {
-      console.log(
-        'Redirecting to signin - not authenticated on protected route',
-      );
       router.push('/auth/signin');
-      return;
     }
-
-    // Редирект если авторизован и на странице входа/регистрации
-    if (
-      isAuthenticated &&
-      (pathname === '/auth/signin' || pathname === '/auth/signup')
-    ) {
-      console.log('Redirecting to home - already authenticated');
-      router.push('/');
-      return;
-    }
-  }, [pathname, isAuthenticated, isCheckingAuth, router]);
-
-  // Остальные функции (login, signup, logout) остаются без изменений
-  // ... (ваш существующий код для login, signup, logout)
+  }, [pathname, isAuthenticated, isInitialized, router]);
 
   const login = useCallback(
     async (email: string, password: string) => {
       try {
         setIsLoading(true);
-        console.log('Login attempt:', { email });
 
         const loginData = {
           email: email.trim(),
@@ -150,8 +141,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         );
 
-        console.log('Token response status:', tokenResponse.status);
-
         if (!tokenResponse.ok) {
           let errorMessage = 'Неверный email или пароль';
           try {
@@ -162,7 +151,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         const tokens = await tokenResponse.json();
-        console.log('Tokens received:', tokens);
 
         if (!tokens.access || !tokens.refresh) {
           throw new Error('Неверный формат ответа от сервера');
@@ -179,7 +167,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         );
 
-        let userData;
+        let userData: User;
+
         if (userResponse.ok) {
           userData = await userResponse.json();
         } else {
@@ -190,16 +179,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           };
         }
 
-        console.log('User data:', userData);
-
         saveAuthData(userData, tokens.access, tokens.refresh);
-        setUser(userData);
 
-        console.log('Login successful, redirecting to /');
         router.push('/');
-        router.refresh();
       } catch (error: any) {
-        console.error('Login error:', error);
         throw new Error(error.message || 'Произошла ошибка при авторизации');
       } finally {
         setIsLoading(false);
@@ -212,7 +195,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (email: string, password: string, username: string) => {
       try {
         setIsLoading(true);
-        console.log('Signup attempt:', { email, username });
 
         const signupData = {
           email: email.trim(),
@@ -231,8 +213,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         );
 
-        console.log('Signup response status:', response.status);
-
         if (!response.ok) {
           let errorMessage = 'Ошибка при регистрации';
           try {
@@ -243,23 +223,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           throw new Error(errorMessage);
         }
 
-        await login(email, password);
+        const loginData = {
+          email: email.trim(),
+          password: password.trim(),
+        };
+
+        const tokenResponse = await fetch(
+          'https://webdev-music-003b5b991590.herokuapp.com/user/token/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loginData),
+          },
+        );
+
+        if (!tokenResponse.ok) {
+          throw new Error('Не удалось получить токены после регистрации');
+        }
+
+        const tokens = await tokenResponse.json();
+
+        if (!tokens.access || !tokens.refresh) {
+          throw new Error('Неверный формат токенов');
+        }
+
+        const userData: User = {
+          email: email,
+          username: username,
+          _id: Date.now(),
+        };
+
+        saveAuthData(userData, tokens.access, tokens.refresh);
+
+        router.push('/');
       } catch (error: any) {
-        console.error('Signup error:', error);
         throw new Error(error.message || 'Произошла ошибка при регистрации');
       } finally {
         setIsLoading(false);
       }
     },
-    [login],
+    [saveAuthData, router],
   );
 
   const logout = useCallback(() => {
-    console.log('Logging out');
-
     clearAuthData();
-    setUser(null);
-
     dispatch(clearFavorites());
 
     if (pathname === '/favorites') {
@@ -267,8 +276,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } else {
       router.push('/auth/signin');
     }
-
-    router.refresh();
   }, [clearAuthData, dispatch, pathname, router]);
 
   const value = {
@@ -279,6 +286,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     signup,
   };
+
+  if (!isInitialized) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <div>Загрузка...</div>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

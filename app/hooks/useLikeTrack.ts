@@ -1,4 +1,3 @@
-// hooks/useLikeTrack.ts
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
@@ -10,7 +9,6 @@ import {
   removeFromFavorites,
   updateTrackLikes,
   setFavoriteError,
-  setFavoriteTracks,
 } from '@/store/features/trackSlice';
 import { useAuth } from '@/app/context/AuthContext';
 
@@ -27,95 +25,51 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAuth();
 
-  // Получаем состояние из Redux с мемоизацией
+  // Получаем состояние из Redux
   const { likedTrackIds, trackLikesCount, favoriteTracks } = useAppSelector(
     (state) => state.tracks,
   );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasChecked, setHasChecked] = useState(false);
+  const [localIsLiked, setLocalIsLiked] = useState<boolean>(false);
 
-  // При монтировании компонента проверяем статус лайка - ТОЛЬКО если авторизован
-  useEffect(() => {
-    const checkLikes = async () => {
-      if (isAuthenticated && !hasChecked) {
-        try {
-          // Загружаем избранные треки один раз при загрузке приложения
-          const favorites = await likeService.getFavoriteTracks();
-          dispatch(setFavoriteTracks(favorites));
-          setHasChecked(true);
-        } catch (error) {
-          console.error('Ошибка загрузки избранных треков:', error);
-          setHasChecked(true);
-        }
-      } else if (!isAuthenticated) {
-        // Если не авторизован, просто отмечаем что проверка выполнена
-        setHasChecked(true);
-      }
-    };
-
-    checkLikes();
-  }, [isAuthenticated, hasChecked, dispatch]);
-
-  // Мемоизируем проверку лайка
+  // ПРОСТАЯ ЛОГИКА определения лайка
   const isLiked = useMemo(() => {
     if (!track) return false;
 
-    // Проверяем в нескольких местах для надежности
-    return (
-      likedTrackIds.includes(track._id) ||
-      favoriteTracks.some((favTrack) => favTrack._id === track._id)
+    // Простая проверка: если трек в favoriteTracks - он лайкнут
+    const isInFavorites = favoriteTracks.some(
+      (favTrack) => favTrack._id === track._id,
     );
-  }, [track, likedTrackIds, favoriteTracks]);
 
-  // Мемоизируем количество лайков
+    return isInFavorites || localIsLiked || track.is_liked === true;
+  }, [track, favoriteTracks, localIsLiked]);
+
+  // Количество лайков
   const likesCount = useMemo(() => {
     if (!track) return 0;
-    return trackLikesCount[track._id] || track.likes_count || 0;
+    return trackLikesCount[track._id] !== undefined
+      ? trackLikesCount[track._id]
+      : track.likes_count || 0;
   }, [track, trackLikesCount]);
 
-  // Мемоизируем проверку статуса лайка на сервере
+  // Проверка статуса лайка на сервере
   const checkLikeStatus = useCallback(async (): Promise<boolean> => {
     if (!track || !isAuthenticated) {
-      // Если не авторизован, возвращаем false
       return false;
     }
 
     try {
-      // Используем существующий метод из likeService
       const isLikedOnServer = await likeService.checkIsLiked(track._id);
-
-      // Синхронизируем с локальным состоянием
-      if (isLikedOnServer && !likedTrackIds.includes(track._id)) {
-        // Добавляем в локальное состояние
-        dispatch(
-          updateTrackLikes({
-            trackId: track._id,
-            likesCount: track.likes_count || 1,
-            isLiked: true,
-          }),
-        );
-      } else if (!isLikedOnServer && likedTrackIds.includes(track._id)) {
-        // Удаляем из локального состояния если на сервере нет лайка
-        dispatch(
-          updateTrackLikes({
-            trackId: track._id,
-            likesCount: Math.max(0, (track.likes_count || 1) - 1),
-            isLiked: false,
-          }),
-        );
-      }
-
+      setLocalIsLiked(isLikedOnServer);
       return isLikedOnServer;
     } catch (err) {
-      console.error('Ошибка проверки статуса лайка:', err);
-      // При ошибке возвращаем текущее локальное состояние
       return isLiked;
     }
-  }, [track, isAuthenticated, likedTrackIds, isLiked, dispatch]);
+  }, [track, isAuthenticated, isLiked]);
 
-  // Мемоизируем основную функцию для тоггла лайка
+  // Основная функция для тоггла лайка
   const toggleLike = useCallback(async (): Promise<void> => {
     if (!track) {
       setError('Трек не найден');
@@ -131,17 +85,18 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
     setError(null);
 
     try {
-      // Оптимистичное обновление UI
       const newIsLiked = !isLiked;
-      const newLikesCount = newIsLiked
-        ? likesCount + 1
-        : Math.max(0, likesCount - 1);
 
-      // Сразу обновляем состояние в Redux
+      // Обновляем локальное состояние
+      setLocalIsLiked(newIsLiked);
+
+      // Обновляем Redux
       dispatch(
         updateTrackLikes({
           trackId: track._id,
-          likesCount: newLikesCount,
+          likesCount: newIsLiked
+            ? (track.likes_count || 0) + 1
+            : Math.max(0, (track.likes_count || 0) - 1),
           isLiked: newIsLiked,
         }),
       );
@@ -153,26 +108,16 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
       }
 
       // Отправляем запрос на сервер
-      await likeService.toggleLike(track._id, !newIsLiked);
-    } catch (err: any) {
-      // Откатываем изменения при ошибке
-      dispatch(
-        updateTrackLikes({
-          trackId: track._id,
-          likesCount: likesCount,
-          isLiked: isLiked,
-        }),
-      );
-
-      if (isLiked) {
-        dispatch(addToFavorites(track));
+      if (newIsLiked) {
+        await likeService.addToFavorites(track._id);
       } else {
-        dispatch(removeFromFavorites(track._id));
+        await likeService.removeFromFavorites(track._id);
       }
+    } catch (err: any) {
+      // Откатываем изменения
+      setLocalIsLiked(isLiked);
 
-      // Устанавливаем ошибку
       let errorMessage = 'Произошла ошибка при обновлении лайка';
-
       if (err.message?.includes('Failed to fetch')) {
         errorMessage = 'Ошибка соединения с сервером';
       } else if (err.status === 401) {
@@ -183,12 +128,20 @@ export const useLikeTrack = (track: Track | null): UseLikeTrackReturn => {
 
       setError(errorMessage);
       dispatch(setFavoriteError(errorMessage));
-
-      console.error('Ошибка при тоггле лайка:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [track, isAuthenticated, isLiked, likesCount, dispatch]);
+  }, [track, isAuthenticated, isLiked, dispatch]);
+
+  // Инициализируем localIsLiked при загрузке трека
+  useEffect(() => {
+    if (track) {
+      const isInFavorites = favoriteTracks.some(
+        (favTrack) => favTrack._id === track._id,
+      );
+      setLocalIsLiked(isInFavorites || track.is_liked === true);
+    }
+  }, [track, favoriteTracks]);
 
   return useMemo(
     () => ({
