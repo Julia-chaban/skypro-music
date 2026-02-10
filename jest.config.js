@@ -8,7 +8,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1', 
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
   transform: {
