@@ -81,6 +81,7 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
       <div
         className={`${styles.nav__burger} ${isMobile ? (isMobileMenuOpen ? styles.active : '') : isDesktopMenuOpen ? styles.active : ''}`}
         onClick={handleBurgerClick}
+        data-testid="burger-menu"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
