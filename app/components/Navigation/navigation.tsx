@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/app/context/AuthContext';
 import styles from './navigation.module.css';
 
 interface NavigationProps {
@@ -13,13 +14,14 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       if (!mobile) {
-        setIsMobileMenuOpen(false); // Закрываем мобильное меню на десктопе
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -31,14 +33,11 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
 
   const handleBurgerClick = () => {
     if (isMobile) {
-      // На мобильных: открываем/закрываем мобильное меню
       setIsMobileMenuOpen(!isMobileMenuOpen);
     } else {
-      // На десктопе: открываем/закрываем меню под бургером и Sidebar
       const newState = !isDesktopMenuOpen;
       setIsDesktopMenuOpen(newState);
 
-      // Управляем Sidebar
       if (onSidebarToggle) {
         onSidebarToggle(newState);
       }
@@ -49,77 +48,44 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
     setIsMobileMenuOpen(false);
     setIsDesktopMenuOpen(false);
 
-    // Закрываем Sidebar при клике на пункт меню
     if (onSidebarToggle) {
       onSidebarToggle(false);
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    closeAllMenus();
+  };
+
   return (
     <nav className={styles.main__nav}>
-      {/* На десктопе: логотип СВЕРХУ, под ним бургер */}
-      {!isMobile && (
-        <>
-          <div className={styles.nav__logo}>
-            <Link href="/">
-              <Image
-                width={113}
-                height={17}
-                className={styles.logo__image}
-                src="/img/logo.png"
-                alt="logo"
-                priority
-              />
-            </Link>
-          </div>
+      <div className={styles.nav__logo}>
+        <Link href="/">
+          <Image
+            width={113}
+            height={17}
+            className={styles.logo__image}
+            src="/img/logo.png"
+            alt="logo"
+            priority
+          />
+        </Link>
+      </div>
 
-          {/* Бургер под логотипом на десктопе */}
-          <div
-            className={`${styles.nav__burger} ${isDesktopMenuOpen ? styles.active : ''}`}
-            onClick={handleBurgerClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
-          >
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-          </div>
-        </>
-      )}
+      <div
+        className={`${styles.nav__burger} ${isMobile ? (isMobileMenuOpen ? styles.active : '') : isDesktopMenuOpen ? styles.active : ''}`}
+        onClick={handleBurgerClick}
+        data-testid="burger-menu"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
+      >
+        <span className={styles.burger__line}></span>
+        <span className={styles.burger__line}></span>
+        <span className={styles.burger__line}></span>
+      </div>
 
-      {/* На мобильных: логотип и бургер в строке */}
-      {isMobile && (
-        <>
-          <div className={styles.nav__logo}>
-            <Link href="/">
-              <Image
-                width={113}
-                height={17}
-                className={styles.logo__image}
-                src="/img/logo.png"
-                alt="logo"
-                priority
-              />
-            </Link>
-          </div>
-
-          {/* Бургер справа на мобильных */}
-          <div
-            className={`${styles.nav__burger} ${isMobileMenuOpen ? styles.active : ''}`}
-            onClick={handleBurgerClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && handleBurgerClick()}
-          >
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-            <span className={styles.burger__line}></span>
-          </div>
-        </>
-      )}
-
-      {/* Десктопное меню (открывается при клике на бургер под лого) */}
       {!isMobile && (
         <div
           className={`${styles.nav__menu} ${isDesktopMenuOpen ? styles.active : ''}`}
@@ -134,29 +100,51 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+            {isAuthenticated && (
+              <li className={styles.menu__item}>
+                <Link
+                  href="/favorites"
+                  className={styles.menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Мои треки
+                </Link>
+              </li>
+            )}
+
             <li className={styles.menu__item}>
-              <Link
-                href="#"
-                className={styles.menu__link}
-                onClick={closeAllMenus}
-              >
-                Мой плейлист
-              </Link>
-            </li>
-            <li className={styles.menu__item}>
-              <Link
-                href="/auth/signin"
-                className={styles.menu__link}
-                onClick={closeAllMenus}
-              >
-                Войти
-              </Link>
+              {isAuthenticated ? (
+                <button
+                  className={styles.menu__link}
+                  onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#ffffff',
+                    fontSize: '16px',
+                    fontWeight: '400',
+                    padding: '0',
+                    textAlign: 'left',
+                    width: '100%',
+                  }}
+                >
+                  Выйти
+                </button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className={styles.menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Войти
+                </Link>
+              )}
             </li>
           </ul>
         </div>
       )}
 
-      {/* Мобильное меню (открывается при клике на бургер справа) */}
       {isMobile && (
         <div
           className={`${styles.nav__mobile_menu} ${isMobileMenuOpen ? styles.active : ''}`}
@@ -171,23 +159,48 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
+
+            {isAuthenticated && (
+              <li className={styles.mobile_menu__item}>
+                <Link
+                  href="/favorites"
+                  className={styles.mobile_menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Мои треки
+                </Link>
+              </li>
+            )}
+
             <li className={styles.mobile_menu__item}>
-              <Link
-                href="#"
-                className={styles.mobile_menu__link}
-                onClick={closeAllMenus}
-              >
-                Мой плейлист
-              </Link>
-            </li>
-            <li className={styles.mobile_menu__item}>
-              <Link
-                href="/auth/signin"
-                className={styles.mobile_menu__link}
-                onClick={closeAllMenus}
-              >
-                Войти
-              </Link>
+              {isAuthenticated ? (
+                <button
+                  className={styles.mobile_menu__link}
+                  onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#ffffff',
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    padding: '12px 0',
+                    textAlign: 'center',
+                    width: '100%',
+                    borderBottom: '1px solid #333',
+                  }}
+                >
+                  Выйти
+                </button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className={styles.mobile_menu__link}
+                  onClick={closeAllMenus}
+                >
+                  Войти
+                </Link>
+              )}
             </li>
           </ul>
         </div>

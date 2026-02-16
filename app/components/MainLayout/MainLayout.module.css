@@ -1,0 +1,31 @@
+.wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #181818;
+}
+
+.container {
+    max-width: 1920px;
+    margin: 0 auto;
+    position: relative;
+    background-color: #181818;
+    min-height: 100vh;
+}
+
+.main {
+    display: flex;
+    min-height: calc(100vh - 90px);
+
+}
+
+.centerContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+}
+
+.footer {
+    height: 0;
+}
