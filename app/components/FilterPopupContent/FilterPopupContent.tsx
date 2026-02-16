@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './FilterPopupContent.module.css';
 
 interface FilterPopupContentProps {
@@ -14,12 +14,10 @@ interface FilterPopupContentProps {
 export default function FilterPopupContent({
   title,
   items,
-  filterType,
   selectedItems = [],
   onItemToggle,
 }: FilterPopupContentProps) {
   const [isMobile, setIsMobile] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -38,14 +36,13 @@ export default function FilterPopupContent({
     }
   };
 
-  // Для мобильных устройств показываем не все элементы сразу
   const displayItems = isMobile ? items.slice(0, 20) : items;
   const hasMoreItems = items.length > displayItems.length;
 
   return (
     <div className={styles.filter__popupContent}>
       <h3 className={styles.filter__popupTitle}>{title}</h3>
-      <div className={styles.filter__list} ref={listRef}>
+      <div className={styles.filter__list}>
         {displayItems.map((item, index) => {
           const isSelected = selectedItems.includes(item);
           const isLongName = item.length > 20;
@@ -55,7 +52,7 @@ export default function FilterPopupContent({
 
           return (
             <div
-              key={`${filterType}-${index}`}
+              key={`${title}-${index}`}
               className={itemClassName}
               onClick={() => handleItemClick(item)}
               role="button"

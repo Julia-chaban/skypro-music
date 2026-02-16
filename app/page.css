@@ -1,8 +1,6 @@
-/* app/page.css */
 .wrapper {
     width: 100%;
     min-height: 100%;
-    /*overflow: hidden;*/
     background-color: #383838;
 }
 
@@ -33,7 +31,7 @@
     display: none;
 }
 
-/* === СТИЛИ ДЛЯ СТРАНИЦЫ ПОДБОРОК === */
+
 
 .collectionsGrid {
     display: grid;
@@ -125,7 +123,7 @@
     color: #696969;
 }
 
-/* === СТИЛИ ДЛЯ СТРАНИЦЫ КОНКРЕТНОЙ ПОДБОРКИ === */
+
 
 .collectionHeader {
     display: flex;
@@ -197,10 +195,9 @@
     color: #696969;
 }
 
-/* Общие стили для контента */
+
 .centerblock {
 
-    /*width: auto;*/
     -webkit-box-flex: 3;
     -ms-flex-positive: 3;
     flex-grow: 3;
@@ -214,7 +211,7 @@
     justify-content: center;
     align-items: center;
     height: 200px;
-    color: #696969;
+    color: #fff;
     font-size: 16px;
     text-align: center;
     padding: 20px;

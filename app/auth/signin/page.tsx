@@ -31,9 +31,12 @@ export default function Signin() {
 
     try {
       await login(formData.email, formData.password);
-    } catch (error: any) {
-      console.error('Ошибка авторизации:', error);
-      setErrors([error.message || 'Произошла ошибка при авторизации']);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Произошла ошибка при авторизации';
+      setErrors([errorMessage]);
     } finally {
       setIsLoading(false);
     }

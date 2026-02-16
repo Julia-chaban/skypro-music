@@ -1,10 +1,9 @@
-// app/collections/page.tsx (список подборок)
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MainLayout from '../components/MainLayout/MainLayout';
-import { fetchApi } from '@/services/api';
+import { fetchApi } from '@/utils/api';
 import { Selection, SelectionsListResponse } from '@/types/track';
 import '../page.css';
 import '../page.mobile.css';
@@ -20,7 +19,6 @@ export default function CollectionsPage() {
         setLoading(true);
         setError(null);
 
-        // ✅ ИСПОЛЬЗУЕМ API СЕРВИС
         const data = await fetchApi<SelectionsListResponse>(
           '/catalog/selection/all/',
         );
@@ -40,7 +38,8 @@ export default function CollectionsPage() {
             collectionsData = data.items;
           } else {
             collectionsData = Object.values(data).filter(
-              (item) => item && typeof item === 'object' && '_id' in item,
+              (item): item is Selection =>
+                item && typeof item === 'object' && '_id' in item,
             ) as Selection[];
           }
         }
@@ -50,12 +49,12 @@ export default function CollectionsPage() {
         }
 
         setCollections(collectionsData);
-      } catch (error: any) {
-        console.error('Error fetching collections:', error);
-        setError(
-          error.message ||
-            'Не удалось загрузить подборки. Пожалуйста, попробуйте позже.',
-        );
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Не удалось загрузить подборки. Пожалуйста, попробуйте позже.';
+        setError(errorMessage);
         setCollections([]);
       } finally {
         setLoading(false);

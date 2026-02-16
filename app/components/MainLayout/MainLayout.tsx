@@ -14,7 +14,6 @@ interface MainLayoutProps {
 export default function MainLayout({ children, pageTitle }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Переименуем handleBurgerClick в handleSidebarToggle
   const handleSidebarToggle = (isOpen: boolean) => {
     setIsSidebarOpen(isOpen);
   };

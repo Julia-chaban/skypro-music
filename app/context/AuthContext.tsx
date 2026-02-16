@@ -50,9 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         setUser(userData);
-      } catch (error) {
-        console.error('Ошибка сохранения данных', error);
-      }
+      } catch (error) {}
     },
     [],
   );
@@ -63,9 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       setUser(null);
-    } catch (error) {
-      console.error('Ошибка очистки данных', error);
-    }
+    } catch (error) {}
   }, []);
 
   useEffect(() => {

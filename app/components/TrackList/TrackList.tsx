@@ -6,17 +6,26 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public data?: any,
+    public data?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-// Функция для редиректа на страницу входа
-const redirectToLogin = () => {
+
+interface ErrorResponse {
+  message?: string;
+  detail?: string;
+}
+
+interface RefreshTokenResponse {
+  access: string;
+  refresh?: string;
+}
+
+const redirectToLogin = (): void => {
   if (typeof window !== 'undefined') {
-    console.log('[API] Редирект на вход');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
@@ -24,17 +33,13 @@ const redirectToLogin = () => {
   }
 };
 
-// Функция для обновления токена
 export const refreshToken = async (): Promise<TokenResponse> => {
   const refreshTokenValue = localStorage.getItem('refreshToken');
 
   if (!refreshTokenValue) {
-    console.error('[API] Refresh токен не найден');
     redirectToLogin();
     throw new ApiError('Refresh токен не найден', 401);
   }
-
-  console.log('[API] Обновление токена...');
 
   try {
     const response = await fetch(`${API_BASE_URL}/user/token/refresh/`, {
@@ -46,27 +51,24 @@ export const refreshToken = async (): Promise<TokenResponse> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Ошибка обновления: ${response.status}`);
+      throw new ApiError(`Ошибка обновления: ${response.status}`, response.status);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as RefreshTokenResponse;
 
     if (!data.access) {
-      throw new Error('Access токен не получен');
+      throw new ApiError('Access токен не получен');
     }
 
     localStorage.setItem('accessToken', data.access);
-    console.log('[API] Токен обновлен');
 
-    return data;
+    return data as TokenResponse;
   } catch (error) {
-    console.error('[API] Ошибка обновления токена:', error);
     redirectToLogin();
     throw error;
   }
 };
 
-// БАЗОВАЯ ФУНКЦИЯ ДЛЯ ЗАПРОСОВ БЕЗ АВТОРИЗАЦИИ
 export const fetchApi = async <T>(
   endpoint: string,
   options: RequestInit = {},
@@ -74,11 +76,8 @@ export const fetchApi = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
 
-    console.log(`📡 [fetchApi] Запрос: ${url}`, options.method || 'GET');
-
-    // Добавляем таймаут для запроса
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -89,19 +88,17 @@ export const fetchApi = async <T>(
       ...options,
       headers,
       signal: controller.signal,
-      mode: 'cors', // Явно указываем CORS режим
-      credentials: 'omit', // Не отправляем куки
+      mode: 'cors',
+      credentials: 'omit',
     }).finally(() => clearTimeout(timeoutId));
-
-    console.log(`📡 [fetchApi] Ответ: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       let errorMessage = `HTTP ошибка! статус: ${response.status}`;
       try {
-        const errorData = await response.json();
+        const errorData = (await response.json()) as ErrorResponse;
         errorMessage = errorData.message || errorData.detail || errorMessage;
       } catch {
-        // Не удалось распарсить JSON
+        
       }
       throw new ApiError(errorMessage, response.status);
     }
@@ -110,40 +107,25 @@ export const fetchApi = async <T>(
       return {} as T;
     }
 
-    const data = await response.json();
-    console.log(`📡 [fetchApi] Успешно: ${endpoint}, получено:`, 
-      Array.isArray(data) ? `${data.length} элементов` : 'объект'
-    );
-    return data;
-  } catch (error: any) {
-    console.error(`❌ [fetchApi] Ошибка (${endpoint}):`, error);
+    return await response.json() as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
 
-    // Обработка разных типов ошибок
-    if (error.name === 'AbortError') {
-      throw new ApiError('Таймаут запроса (15 секунд)', 408);
-    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      // Проверяем доступность API
-      console.error('🌐 Возможные проблемы:');
-      console.error('1. API сервер недоступен');
-      console.error('2. Проблема с CORS (нужны заголовки на сервере)');
-      console.error('3. Блокировка AdBlock или антивируса');
-      
-      // Тестируем доступность API
-      try {
-        const testResponse = await fetch(API_BASE_URL, { method: 'HEAD' });
-        console.log(`🌐 Проверка API: ${testResponse.status} ${testResponse.statusText}`);
-      } catch (testError) {
-        console.error('🌐 API полностью недоступен');
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new ApiError('Таймаут запроса (15 секунд)', 408);
       }
-      
-      throw new ApiError('Не удалось подключиться к серверу. Проверьте интернет соединение.', 0);
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        throw new ApiError('Не удалось подключиться к серверу. Проверьте интернет соединение.', 0);
+      }
     }
     
-    throw error;
+    throw new ApiError('Неизвестная ошибка при выполнении запроса');
   }
 };
 
-// ФУНКЦИЯ ДЛЯ ЗАПРОСОВ С АВТОРИЗАЦИЕЙ
 export const fetchWithAuth = async <T>(
   endpoint: string,
   options: RequestInit = {},
@@ -151,7 +133,6 @@ export const fetchWithAuth = async <T>(
   let accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
-    console.error('[fetchWithAuth] Access токен не найден');
     redirectToLogin();
     throw new ApiError('Требуется авторизация', 401);
   }
@@ -165,8 +146,6 @@ export const fetchWithAuth = async <T>(
       ...options.headers,
     };
 
-    console.log(`🔐 [fetchWithAuth] Запрос: ${url}`);
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -177,23 +156,17 @@ export const fetchWithAuth = async <T>(
       mode: 'cors',
     }).finally(() => clearTimeout(timeoutId));
 
-    console.log(
-      `🔐 [fetchWithAuth] Ответ: ${response.status} ${response.statusText}`,
-    );
-
-    // Если токен истек, пробуем обновить
     if (response.status === 401) {
-      console.log('[fetchWithAuth] Токен истек, пытаемся обновить...');
       throw new ApiError('Токен истек', 401);
     }
 
     if (!response.ok) {
       let errorMessage = `HTTP ошибка! статус: ${response.status}`;
       try {
-        const errorData = await response.json();
+        const errorData = (await response.json()) as ErrorResponse;
         errorMessage = errorData.message || errorData.detail || errorMessage;
       } catch {
-        // Не удалось распарсить JSON
+        
       }
       throw new ApiError(errorMessage, response.status);
     }
@@ -202,24 +175,17 @@ export const fetchWithAuth = async <T>(
       return {} as T;
     }
 
-    return response.json();
+    return await response.json() as T;
   };
 
   try {
     return await makeRequest(accessToken);
-  } catch (error: any) {
-    // Если ошибка 401, пробуем обновить токен и повторить
-    if (error.status === 401) {
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
       try {
-        console.log('[fetchWithAuth] Обновляем токен...');
         const newTokens = await refreshToken();
-        console.log('[fetchWithAuth] Новый токен получен, повторяем запрос');
         return await makeRequest(newTokens.access);
-      } catch (refreshError) {
-        console.error(
-          '[fetchWithAuth] Не удалось обновить токен:',
-          refreshError,
-        );
+      } catch {
         redirectToLogin();
         throw new ApiError('Сессия истекла', 401);
       }
@@ -228,7 +194,6 @@ export const fetchWithAuth = async <T>(
   }
 };
 
-// Экспортируем все функции
 export default {
   fetchApi,
   fetchWithAuth,

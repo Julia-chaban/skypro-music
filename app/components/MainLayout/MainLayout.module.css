@@ -15,16 +15,15 @@
 .main {
     display: flex;
     min-height: calc(100vh - 90px);
-    /* Высота минус Bar */
+
 }
 
-/* Центральный блок (где Centerblock) */
 .centerContent {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    /* Скролл если нужно */
+
 }
 
 .footer {

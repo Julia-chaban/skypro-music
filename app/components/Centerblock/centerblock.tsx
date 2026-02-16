@@ -5,14 +5,17 @@ import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'next/navigation';
 import Filter from '../Filter/Filter';
 import Track from '../TrackItem/TrackItem';
-import {
-  Track as TrackType,
-  SelectionResponse,
-  TracksListResponse,
-} from '@/types/track';
+import { Track as TrackType } from '@/types/track';
 import { setFilteredPlaylist, setPlaylist } from '@/store/features/trackSlice';
-import { fetchApi } from '@/utils/api';
+import { fetchAllTracks, fetchCollectionById } from '@/api/tracks';
 import styles from './centerblock.module.css';
+
+
+const SELECTION_NAMES: Record<string, string> = {
+  '2': 'Плейлист дня',
+  '3': '100 танцевальных хитов',
+  '4': 'Инди-заряд',
+};
 
 export default function Centerblock() {
   const dispatch = useDispatch();
@@ -29,144 +32,10 @@ export default function Centerblock() {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    console.log('🎯 collectionId изменился:', collectionId);
-  }, [collectionId]);
-
-  const fetchAllTracks = async (): Promise<TrackType[]> => {
-    try {
-      console.log('🔄 Загружаем ВСЕ треки из API');
-
-      const data = await fetchApi<TracksListResponse>('/catalog/track/all/');
-      console.log('📦 Ответ API (все треки):', data);
-
-      let tracksArray: TrackType[] = [];
-
-      if (Array.isArray(data)) {
-        tracksArray = data;
-        console.log('📊 API вернул массив напрямую');
-      } else if (data && typeof data === 'object') {
-        if (Array.isArray(data.data)) {
-          tracksArray = data.data;
-          console.log('📊 Нашли треки в поле data');
-        } else if (Array.isArray(data.tracks)) {
-          tracksArray = data.tracks;
-          console.log('📊 Нашли треки в поле tracks');
-        } else if (Array.isArray(data.results)) {
-          tracksArray = data.results;
-          console.log('📊 Нашли треки в поле results');
-        } else if (Array.isArray(data.items)) {
-          tracksArray = data.items;
-          console.log('📊 Нашли треки в поле items');
-        } else {
-          const arrayValues = Object.values(data).filter(Array.isArray);
-          if (arrayValues.length > 0) {
-            tracksArray = arrayValues[0] as TrackType[];
-            console.log('📊 Нашли треки в произвольном поле массива');
-          }
-        }
-      }
-
-      console.log('✅ Извлечено треков:', tracksArray.length);
-
-      if (tracksArray.length === 0) {
-        console.warn('⚠️ API вернул пустой массив треков');
-      }
-
-      return tracksArray;
-    } catch (error) {
-      console.error('❌ Ошибка при загрузке всех треков:', error);
-      throw error;
-    }
-  };
-
-  const fetchCollectionById = async (
-    id: string,
-  ): Promise<{ title: string; tracks: TrackType[] }> => {
-    try {
-      console.log(`🎯 Загружаем подборку с ID: ${id}`);
-
-      const data = await fetchApi<any>('/catalog/selection/all/');
-      console.log('📦 Все подборки:', data);
-
-      let title = 'Подборка';
-
-      const selectionNames: Record<string, string> = {
-        '2': 'Плейлист дня',
-        '3': '100 танцевальных хитов',
-        '4': 'Инди-заряд',
-      };
-
-      if (selectionNames[id]) {
-        title = selectionNames[id];
-        console.log(`🏷️ Название подборки: "${title}"`);
-      }
-
-      let trackIds: number[] = [];
-
-      if (data && typeof data === 'object') {
-        const targetIdNum = parseInt(id);
-        let foundSelection = null;
-
-        const searchInObject = (obj: any): any => {
-          if (!obj || typeof obj !== 'object') return null;
-
-          if (obj._id === targetIdNum || obj.id === targetIdNum) {
-            return obj;
-          }
-
-          for (const key in obj) {
-            if (typeof obj[key] === 'object') {
-              const found = searchInObject(obj[key]);
-              if (found) return found;
-            }
-          }
-
-          return null;
-        };
-
-        foundSelection = searchInObject(data);
-
-        if (foundSelection) {
-          console.log('✅ Найдена подборка:', foundSelection);
-
-          if (foundSelection.items && Array.isArray(foundSelection.items)) {
-            trackIds = foundSelection.items.map((itemId: any) =>
-              Number(itemId),
-            );
-            console.log('🎵 ID треков в подборке:', trackIds);
-          }
-        }
-      }
-
-      let tracksArray: TrackType[] = [];
-      if (trackIds.length > 0) {
-        const allTracks = await fetchAllTracks();
-        tracksArray = allTracks.filter((track) => {
-          const trackId =
-            typeof track._id === 'number' ? track._id : parseInt(track._id);
-          return trackIds.includes(trackId);
-        });
-        console.log(`✅ Найдено треков для подборки: ${tracksArray.length}`);
-      }
-
-      console.log(`🎵 Треков в подборке: ${tracksArray.length}`);
-
-      return { title, tracks: tracksArray };
-    } catch (error) {
-      console.error(`❌ Ошибка загрузки подборки ${id}:`, error);
-      throw error;
-    }
-  };
-
-  useEffect(() => {
     const fetchTracks = async (): Promise<void> => {
       try {
-        console.log('🔥 ========= НАЧАЛО ЗАГРУЗКИ =========');
-        console.log('📌 Collection ID:', collectionId);
-
         setLoading(true);
         setError(null);
-        // Сбрасываем все фильтры и поиск при загрузке новых данных
         setSelectedArtists([]);
         setSelectedGenres([]);
         setSelectedYears([]);
@@ -176,47 +45,31 @@ export default function Centerblock() {
         let title = collectionId ? 'Загрузка подборки...' : 'Треки';
 
         if (collectionId) {
-          console.log(`🎯 Режим: Загружаем подборку`);
-
           try {
-            const collectionData = await fetchCollectionById(collectionId);
+            const collectionData = await fetchCollectionById(
+              collectionId,
+              SELECTION_NAMES,
+            );
             title = collectionData.title;
             tracksArray = collectionData.tracks;
-
-            console.log(`✅ Подборка "${title}" загружена`);
-            console.log(`✅ Треков в подборке: ${tracksArray.length}`);
-
-            if (tracksArray.length === 0) {
-              console.log('ℹ️ Подборка пустая');
-            }
-          } catch (apiError: any) {
-            console.error('❌ Ошибка загрузки подборки:', apiError);
-
-            const errorMessage = apiError.message || 'Неизвестная ошибка';
+          } catch {
+            const errorMessage = 'Не удалось загрузить подборку';
             setError(`Не удалось загрузить подборку: ${errorMessage}`);
             tracksArray = [];
             title = 'Подборка';
           }
         } else {
-          console.log('🏠 Режим: Главная страница (все треки)');
           tracksArray = await fetchAllTracks();
           title = 'Треки';
-          console.log(`✅ Всего треков: ${tracksArray.length}`);
         }
-
-        console.log('🎯 ========= ФИНАЛЬНЫЕ ДАННЫЕ =========');
-        console.log(`🏷️ Заголовок: "${title}"`);
-        console.log(`🎵 Треков: ${tracksArray.length}`);
 
         setTracks(tracksArray);
         setCollectionTitle(title);
-      } catch (error: any) {
-        console.error('💥 Критическая ошибка:', error);
-        setError(`Произошла ошибка: ${error.message || 'Неизвестная ошибка'}`);
+      } catch {
+        setError('Произошла ошибка при загрузке данных');
         setTracks([]);
         setCollectionTitle(collectionId ? 'Подборка' : 'Треки');
       } finally {
-        console.log('✅ ========= ЗАГРУЗКА ЗАВЕРШЕНА =========');
         setLoading(false);
       }
     };
@@ -226,7 +79,6 @@ export default function Centerblock() {
 
   const filteredTracks = useMemo(() => {
     if (!searchQuery.trim()) {
-      // Если нет поискового запроса, применяем обычные фильтры
       if (
         selectedArtists.length === 0 &&
         selectedGenres.length === 0 &&
@@ -262,17 +114,11 @@ export default function Centerblock() {
       });
     }
 
-    // Если есть поисковый запрос, ищем по совпадению первых букв
     const query = searchQuery.toLowerCase().trim();
 
     return tracks.filter((track) => {
-      // Проверяем совпадение первых букв в названии трека
       const nameStartsWith = track.name?.toLowerCase().startsWith(query);
-
-      // Проверяем совпадение первых букв в имени исполнителя
       const authorStartsWith = track.author?.toLowerCase().startsWith(query);
-
-      // Проверяем совпадение первых букв в названии альбома
       const albumStartsWith = track.album?.toLowerCase().startsWith(query);
 
       return nameStartsWith || authorStartsWith || albumStartsWith;

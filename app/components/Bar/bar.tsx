@@ -1,5 +1,4 @@
-﻿// app/components/Bar/Bar.tsx
-'use client';
+﻿'use client';
 
 import React, {
   useEffect,
@@ -23,9 +22,15 @@ import {
 } from '@/store/features/trackSlice';
 import { useLikeTrack } from '@/app/hooks/useLikeTrack';
 import { useFormatTime } from '@/app/hooks/useFormatTime';
+import { fixTrackUrl } from '@/utils/trackHelpers';
 import styles from './bar.module.css';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import VolumeControl from '../VolumeControl/VolumeControl';
+
+// Константы
+const LIKE_ANIMATION_DURATION = 500;
+const LIKE_ERROR_TIMEOUT = 3000;
+const AUDIO_READY_STATE = 2;
 
 export default function Bar() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -41,7 +46,6 @@ export default function Bar() {
     isShuffling,
   } = useAppSelector((state) => state.tracks);
 
-  // Используем хук для лайков
   const {
     isLiked,
     isLoading: likeLoading,
@@ -54,7 +58,6 @@ export default function Bar() {
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
 
-  // Мемоизация форматированных значений времени
   const formattedCurrentTime = useMemo(
     () => formatTime(currentTime),
     [currentTime, formatTime],
@@ -64,7 +67,6 @@ export default function Bar() {
     [duration, formatTime],
   );
 
-  // Мемоизация стилей иконок
   const repeatIconStyle = useMemo(
     () => ({
       stroke: isLooping ? '#ffffff' : '#696969',
@@ -81,7 +83,6 @@ export default function Bar() {
     [isShuffling],
   );
 
-  // Мемоизация состояний кнопок
   const isPrevDisabled = useMemo(() => !currentTrack, [currentTrack]);
   const isPlayDisabled = useMemo(() => !currentTrack, [currentTrack]);
   const isNextDisabled = useMemo(() => !currentTrack, [currentTrack]);
@@ -92,47 +93,9 @@ export default function Bar() {
     [currentTrack, likeLoading],
   );
 
-  // Функция для исправления URL трека
-  const fixTrackUrl = useCallback((trackFile: string | any): string => {
-    if (typeof trackFile !== 'string') {
-      console.error('Некорректный тип track_file:', typeof trackFile);
-      return '';
-    }
-
-    let trackUrl = trackFile.trim();
-
-    // Если URL уже полный, возвращаем как есть
-    if (
-      trackUrl.startsWith('http://') ||
-      trackUrl.startsWith('https://') ||
-      trackUrl.startsWith('/') ||
-      trackUrl.startsWith('blob:')
-    ) {
-      return trackUrl;
-    }
-
-    // Если это относительный путь, добавляем базовый URL
-    if (trackUrl) {
-      // Убираем лишние слэши в начале
-      trackUrl = trackUrl.replace(/^\/+/, '');
-
-      // Проверяем, содержит ли уже путь media/
-      if (trackUrl.startsWith('media/')) {
-        return `https://webdev-music-003b5b991590.herokuapp.com/${trackUrl}`;
-      } else {
-        return `https://webdev-music-003b5b991590.herokuapp.com/media/${trackUrl}`;
-      }
-    }
-
-    return '';
-  }, []);
-
-  // Инициализация аудио - только один раз
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    console.log('Аудио элемент инициализирован');
 
     const handleLoadedMetadata = () => {
       if (!isNaN(audio.duration) && isFinite(audio.duration)) {
@@ -148,26 +111,21 @@ export default function Bar() {
     };
 
     const handleEnded = () => {
-      // АВТОМАТИЧЕСКИЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
       if (!isLooping) {
         dispatch(nextTrack());
       }
     };
 
-    const handleError = (e: Event) => {
-      const audioElement = e.target as HTMLAudioElement;
-      console.error('Ошибка аудио элемента:', audioElement.error);
+    const handleError = () => {
       dispatch(setIsPlaying(false));
       setIsAudioReady(false);
     };
 
     const handleCanPlay = () => {
       setIsAudioReady(true);
-      console.log('Аудио готово к воспроизведению');
     };
 
     const handleWaiting = () => {
-      console.log('Аудио ожидает загрузки');
       setIsAudioReady(false);
     };
 
@@ -188,35 +146,26 @@ export default function Bar() {
     };
   }, [dispatch, isLooping]);
 
-  // Установка трека и управление воспроизведением
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
-    // Исправляем URL трека
     const trackUrl = fixTrackUrl(currentTrack.track_file);
 
     if (!trackUrl) {
-      console.error('Некорректный URL трека для:', currentTrack.name);
       dispatch(setIsPlaying(false));
       return;
     }
 
-    console.log('Загружаем трек:', currentTrack.name, 'URL:', trackUrl);
-
-    // Если это тот же трек, только обновляем состояние
     const currentSrc = audio.src;
     const newSrc = trackUrl;
 
     if (currentSrc && currentSrc === newSrc) {
-      // Тот же трек, только обновляем воспроизведение если нужно
       if (isPlaying && audio.paused) {
-        // Проверяем, готово ли аудио к воспроизведению
-        if (isAudioReady && audio.readyState >= 2) {
+        if (isAudioReady && audio.readyState >= AUDIO_READY_STATE) {
           const playPromise = audio.play();
           if (playPromise !== undefined) {
-            playPromise.catch((error) => {
-              console.error('Ошибка воспроизведения:', error);
+            playPromise.catch(() => {
               dispatch(setIsPlaying(false));
             });
           }
@@ -227,22 +176,18 @@ export default function Bar() {
       return;
     }
 
-    // Новый трек - сбрасываем флаг готовности
     setIsAudioReady(false);
 
-    // Загружаем новый трек
     audio.src = trackUrl;
     audio.volume = volume;
     audio.loop = isLooping;
 
-    // Устанавливаем обработчик для воспроизведения после загрузки
     const handleCanPlayThrough = () => {
       setIsAudioReady(true);
       if (isPlaying) {
         const playPromise = audio.play();
         if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.error('Ошибка воспроизведения нового трека:', error);
+          playPromise.catch(() => {
             dispatch(setIsPlaying(false));
           });
         }
@@ -254,57 +199,41 @@ export default function Bar() {
     return () => {
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
     };
-  }, [
-    currentTrack,
-    dispatch,
-    volume,
-    isLooping,
-    isPlaying,
-    isAudioReady,
-    fixTrackUrl,
-  ]);
+  }, [currentTrack, dispatch, volume, isLooping, isPlaying, isAudioReady]);
 
-  // Управление громкостью
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // Управление зацикливанием
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.loop = isLooping;
     }
   }, [isLooping]);
 
-  // Обработчики с useCallback для стабильности
   const handlePlayClick = useCallback(() => {
     if (!currentTrack) return;
     const audio = audioRef.current;
 
     if (audio) {
       if (isPlaying) {
-        // Если трек играет, ставим на паузу
         audio.pause();
         dispatch(setIsPlaying(false));
       } else {
-        // Если трек на паузе, продолжаем воспроизведение
-        // Проверяем, готово ли аудио
-        if (isAudioReady && audio.readyState >= 2) {
+        if (isAudioReady && audio.readyState >= AUDIO_READY_STATE) {
           const playPromise = audio.play();
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
                 dispatch(setIsPlaying(true));
               })
-              .catch((error) => {
-                console.error('Ошибка воспроизведения:', error);
+              .catch(() => {
                 dispatch(setIsPlaying(false));
               });
           }
         } else {
-          // Если аудио не готово, ждем
           const handleCanPlay = () => {
             const playPromise = audio.play();
             if (playPromise !== undefined) {
@@ -312,8 +241,7 @@ export default function Bar() {
                 .then(() => {
                   dispatch(setIsPlaying(true));
                 })
-                .catch((error) => {
-                  console.error('Ошибка воспроизведения:', error);
+                .catch(() => {
                   dispatch(setIsPlaying(false));
                 });
             }
@@ -326,26 +254,21 @@ export default function Bar() {
   }, [currentTrack, isPlaying, dispatch, isAudioReady]);
 
   const handleNextClick = useCallback(() => {
-    // РУЧНОЙ ПЕРЕХОД К СЛЕДУЮЩЕМУ ТРЕКУ
     dispatch(nextTrack());
   }, [dispatch]);
 
   const handlePrevClick = useCallback(() => {
-    // РУЧНОЙ ПЕРЕХОД К ПРЕДЫДУЩЕМУ ТРЕКУ
     dispatch(prevTrack());
   }, [dispatch]);
 
   const handleRepeatClick = useCallback(() => {
-    // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ РЕЖИМА ЗАЦИКЛИВАНИЯ ТРЕКА
     dispatch(toggleLooping());
   }, [dispatch]);
 
   const handleShuffleClick = useCallback(() => {
-    // ВКЛЮЧЕНИЕ/ВЫКЛЮЧЕНИЕ РЕЖИМА ПЕРЕМЕШИВАНИЯ (SHUFFLE)
     dispatch(toggleShuffling());
   }, [dispatch]);
 
-  // Обработчик лайка для прогресс-бара
   const handleLikeClick = useCallback(
     async (e: React.MouseEvent) => {
       e.preventDefault();
@@ -360,18 +283,17 @@ export default function Bar() {
 
         if (likeError) {
           setShowLikeError(true);
-          setTimeout(() => setShowLikeError(false), 3000);
+          setTimeout(() => setShowLikeError(false), LIKE_ERROR_TIMEOUT);
         }
-      } catch (err) {
-        console.error('Ошибка при обработке лайка:', err);
+      } catch {
+        
       } finally {
-        setTimeout(() => setIsLikeAnimating(false), 500);
+        setTimeout(() => setIsLikeAnimating(false), LIKE_ANIMATION_DURATION);
       }
     },
     [currentTrack, toggleLike, likeError, likeLoading],
   );
 
-  // Обработчик для VolumeControl
   const handleVolumeChange = useCallback(
     (newVolume: number) => {
       dispatch(setVolume(newVolume));
@@ -379,7 +301,6 @@ export default function Bar() {
     [dispatch],
   );
 
-  // Обработчик для ProgressBar компонента
   const handleProgressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!duration || !audioRef.current) return;
@@ -392,7 +313,6 @@ export default function Bar() {
     [duration, dispatch],
   );
 
-  // Мемоизация класса для лайка
   const likeClassName = useMemo(() => {
     const classes = [styles.trackPlay__like, styles.btnIcon];
 
@@ -403,7 +323,6 @@ export default function Bar() {
     return classes.join(' ');
   }, [isLikeAnimating]);
 
-  // Мемоизация стиля для лайка
   const likeButtonStyle = useMemo(() => {
     if (likeLoading) {
       return { opacity: 0.5, cursor: 'not-allowed' };
@@ -411,7 +330,6 @@ export default function Bar() {
     return {};
   }, [likeLoading]);
 
-  // Мемоизация JSX для прогресс-бара
   const progressBar = useMemo(
     () =>
       currentTrack && duration > 0 ? (
@@ -425,7 +343,6 @@ export default function Bar() {
     [currentTrack, duration, currentTime, handleProgressChange],
   );
 
-  // Мемоизация JSX для иконки воспроизведения
   const playIcon = useMemo(
     () =>
       currentTrack && isPlaying ? (
@@ -436,7 +353,6 @@ export default function Bar() {
     [currentTrack, isPlaying],
   );
 
-  // Мемоизация JSX для информации о треке
   const trackInfo = useMemo(
     () => ({
       author: currentTrack
@@ -449,7 +365,6 @@ export default function Bar() {
     [currentTrack],
   );
 
-  // Мемоизация JSX для времени трека
   const trackTime = useMemo(
     () =>
       currentTrack && duration > 0 ? (
@@ -462,7 +377,6 @@ export default function Bar() {
     [currentTrack, duration, formattedCurrentTime, formattedDuration],
   );
 
-  // Мемоизация JSX для ошибки лайка
   const likeErrorTooltip = useMemo(
     () =>
       showLikeError && likeError ? (
@@ -471,11 +385,9 @@ export default function Bar() {
     [showLikeError, likeError],
   );
 
-  // Мемоизация JSX для контролов
   const playerControls = useMemo(
     () => (
       <div className={styles.player__controls}>
-        {/* КНОПКА ПРЕДЫДУЩЕГО ТРЕКА */}
         <div
           className={`${styles.player__btnPrev} ${styles.btn}`}
           onClick={!isPrevDisabled ? handlePrevClick : undefined}
@@ -488,7 +400,6 @@ export default function Bar() {
             <use xlinkHref="/icon/prev.svg"></use>
           </svg>
         </div>
-        {/* КНОПКА ВОСПРОИЗВЕДЕНИЯ/ПАУЗЫ */}
         <div
           className={`${styles.player__btnPlay} ${styles.btn}`}
           onClick={!isPlayDisabled ? handlePlayClick : undefined}
@@ -501,7 +412,6 @@ export default function Bar() {
             {playIcon}
           </svg>
         </div>
-        {/* КНОПКА СЛЕДУЮЩЕГО ТРЕКА */}
         <div
           className={`${styles.player__btnNext} ${styles.btn}`}
           onClick={!isNextDisabled ? handleNextClick : undefined}
@@ -514,7 +424,6 @@ export default function Bar() {
             <use xlinkHref="/icon/next.svg"></use>
           </svg>
         </div>
-        {/* КНОПКА ПОВТОРА (ЗАЦИКЛИВАНИЕ) */}
         <div
           className={`${styles.player__btnRepeat} ${styles.btnIcon}`}
           onClick={!isRepeatDisabled ? handleRepeatClick : undefined}
@@ -524,7 +433,6 @@ export default function Bar() {
             <use xlinkHref="/icon/repeat.svg"></use>
           </svg>
         </div>
-        {/* КНОПКА ПЕРЕМЕШИВАНИЯ (SHUFFLE) */}
         <div
           className={`${styles.player__btnShuffle} ${styles.btnIcon}`}
           onClick={!isShuffleDisabled ? handleShuffleClick : undefined}
@@ -556,7 +464,6 @@ export default function Bar() {
     ],
   );
 
-  // Мемоизация JSX для информации о треке
   const trackPlayInfo = useMemo(
     () => (
       <div className={styles.player__trackPlay}>
@@ -579,7 +486,6 @@ export default function Bar() {
         </div>
 
         <div className={styles.trackPlay__dislike}>
-          {/* Иконка лайка/дизлайка */}
           <div
             className={likeClassName}
             onClick={!isLikeDisabled ? handleLikeClick : undefined}
@@ -609,7 +515,6 @@ export default function Bar() {
     ],
   );
 
-  // Мемоизация JSX для контроля громкости
   const volumeControl = useMemo(
     () => (
       <div className={styles.bar__volumeBlock}>
@@ -628,14 +533,10 @@ export default function Bar() {
     [volume, handleVolumeChange],
   );
 
-  // Мемоизация основного контента
   const barContent = useMemo(
     () => (
       <>
-        {/* Аудио элемент всегда на странице */}
         <audio ref={audioRef} preload="auto" />
-
-        {/* ОДИН БАР - рендерится всегда */}
         <div className={styles.bar}>
           <div className={styles.bar__content}>
             {progressBar}

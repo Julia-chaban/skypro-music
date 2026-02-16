@@ -63,11 +63,13 @@ export default function SignUp() {
 
     try {
       await signup(formData.email, formData.password, formData.username);
-      // После успешной регистрации редирект на страницу входа
       router.push('/auth/signin');
-    } catch (error: any) {
-      console.error('Ошибка регистрации:', error);
-      setErrors([error.message || 'Произошла ошибка при регистрации']);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Произошла ошибка при регистрации';
+      setErrors([errorMessage]);
     }
   };
 

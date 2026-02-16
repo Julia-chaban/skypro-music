@@ -2,19 +2,23 @@ import { TokenResponse } from '@/types/auth';
 
 const API_BASE_URL = 'https://webdev-music-003b5b991590.herokuapp.com';
 
+interface ErrorWithStatus {
+  status?: number;
+  message?: string;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public data?: any,
+    public data?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-// Функция для редиректа на страницу входа
-const redirectToLogin = () => {
+const redirectToLogin = (): void => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -23,7 +27,6 @@ const redirectToLogin = () => {
   }
 };
 
-// Функция для обновления токена с повторным запросом
 export const withReauth = async <T>(
   requestFn: (accessToken: string) => Promise<T>,
   maxRetries = 1,
@@ -37,14 +40,13 @@ export const withReauth = async <T>(
 
   try {
     return await requestFn(accessToken);
-  } catch (error: any) {
-    if (error.status === 401 && maxRetries > 0) {
+  } catch (error: unknown) {
+    const errorWithStatus = error as ErrorWithStatus;
+    if (errorWithStatus.status === 401 && maxRetries > 0) {
       try {
-        // Пытаемся обновить токен
         const newAccessToken = await refreshToken();
-        // Повторяем запрос с новым токеном
         return await requestFn(newAccessToken.access);
-      } catch (refreshError) {
+      } catch {
         redirectToLogin();
         throw new ApiError('Сессия истекла. Пожалуйста, войдите снова.', 401);
       }
@@ -75,9 +77,7 @@ export const fetchApi = async <T>(
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.detail || errorMessage;
-    } catch {
-      // Не удалось распарсить JSON
-    }
+    } catch {}
     throw new ApiError(errorMessage, response.status);
   }
 
@@ -115,9 +115,7 @@ export const fetchWithAuth = async <T>(
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.detail || errorMessage;
-      } catch {
-        // Не удалось распарсить JSON
-      }
+      } catch {}
       throw new ApiError(errorMessage, response.status);
     }
 

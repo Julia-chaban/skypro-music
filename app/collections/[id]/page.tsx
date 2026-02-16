@@ -1,11 +1,10 @@
-// app/collections/[id]/page.tsx (детали подборки)
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import MainLayout from '../../components/MainLayout/MainLayout';
 import TrackItem from '../../components/TrackItem/TrackItem';
-import { fetchApi } from '@/services/api';
+import { fetchApi } from '@/utils/api';
 import { SelectionResponse } from '@/types/track';
 import '../../page.css';
 import '../../page.mobile.css';
@@ -24,17 +23,16 @@ export default function CollectionPage() {
         setLoading(true);
         setError(null);
 
-        // ✅ ИСПОЛЬЗУЕМ API СЕРВИС
         const data = await fetchApi<SelectionResponse>(
           `/catalog/selection/${id}/`,
         );
         setCollection(data);
-      } catch (error: any) {
-        console.error('Error fetching collection:', error);
-        setError(
-          error.message ||
-            'Не удалось загрузить подборку. Пожалуйста, попробуйте позже.',
-        );
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Не удалось загрузить подборку. Пожалуйста, попробуйте позже.';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

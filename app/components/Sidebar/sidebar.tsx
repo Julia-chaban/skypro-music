@@ -1,4 +1,3 @@
-// app/components/Sidebar/sidebar.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -7,9 +6,31 @@ import { useAuth } from '@/app/context/AuthContext';
 import { Selection, SelectionsListResponse } from '@/types/track';
 import { fetchApi } from '@/utils/api';
 
+interface ApiSelectionItem {
+  _id?: number | string;
+  id?: number | string;
+  author?: string;
+  owner?: string;
+  tracks?: unknown[];
+  items?: unknown[];
+  logo?: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
 interface SidebarProps {
   isOpen?: boolean;
 }
+
+const SELECTIONS_CONFIG = [
+  { id: '2', name: 'Плейлист дня', defaultImage: '/img/playlist01.png' },
+  {
+    id: '3',
+    name: '100 танцевальных хитов',
+    defaultImage: '/img/playlist02.png',
+  },
+  { id: '4', name: 'Инди-заряд', defaultImage: '/img/playlist03.png' },
+];
 
 export default function Sidebar({ isOpen = true }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false);
@@ -41,63 +62,53 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
     fetchSelections();
   }, []);
 
-  // Конфигурация подборок с правильными ID и названиями
-  const SELECTIONS_CONFIG = [
-    { id: '2', name: 'Плейлист дня', defaultImage: '/img/playlist01.png' },
-    {
-      id: '3',
-      name: '100 танцевальных хитов',
-      defaultImage: '/img/playlist02.png',
-    },
-    { id: '4', name: 'Инди-заряд', defaultImage: '/img/playlist03.png' },
-  ];
+  const findSelectionInApiData = (
+    data: SelectionsListResponse,
+    targetId: string,
+  ): ApiSelectionItem | null => {
+    if (!data || typeof data !== 'object') return null;
+
+    const allValues = Object.values(data);
+
+    for (const value of allValues) {
+      if (value && typeof value === 'object') {
+        const foundItem = Object.values(value).find((item: unknown) => {
+          if (!item || typeof item !== 'object') return false;
+
+          const typedItem = item as ApiSelectionItem;
+          const itemId = typedItem._id || typedItem.id;
+          return String(itemId) === targetId;
+        });
+
+        if (foundItem) {
+          return foundItem as ApiSelectionItem;
+        }
+      }
+    }
+
+    return null;
+  };
 
   const fetchSelections = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🔄 Загружаем подборки...');
       const data = await fetchApi<SelectionsListResponse>(
         '/catalog/selection/all',
       );
-      console.log('📦 Selections API response:', data);
 
-      // Создаем массив для подборок
       const formattedSelections: Selection[] = [];
 
-      // Проходим по конфигурации и ищем подборки по ID
-      SELECTIONS_CONFIG.forEach((config, index) => {
+      SELECTIONS_CONFIG.forEach((config) => {
         try {
-          let selectionData = null;
+          let selectionData: ApiSelectionItem | null = null;
 
-          // Ищем подборку в данных API
           if (data && typeof data === 'object') {
-            // Если это объект с вложенными объектами (как на скриншоте)
-            const allValues = Object.values(data);
-
-            for (const value of allValues) {
-              if (value && typeof value === 'object') {
-                // Ищем объект с нужным ID
-                const foundItem = Object.values(value).find((item: any) => {
-                  if (!item || typeof item !== 'object') return false;
-
-                  const itemId = item._id || item.id;
-                  return String(itemId) === config.id;
-                });
-
-                if (foundItem) {
-                  selectionData = foundItem;
-                  break;
-                }
-              }
-            }
+            selectionData = findSelectionInApiData(data, config.id);
           }
 
-          // Если нашли подборку, используем ее данные
           if (selectionData) {
-            console.log(`✅ Найдена подборка ${config.id}:`, selectionData);
-
             const author =
               selectionData.author ||
               selectionData.owner ||
@@ -108,16 +119,12 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
 
             formattedSelections.push({
               _id: config.id,
-              name: config.name, // Используем правильное название из конфигурации
+              name: config.name,
               author: String(author),
               tracks: Array.isArray(tracks) ? tracks : [],
               logo: String(logo),
             });
           } else {
-            // Если не нашли в API, создаем заглушку
-            console.log(
-              `⚠️ Подборка ${config.id} не найдена в API, создаем заглушку`,
-            );
             formattedSelections.push({
               _id: config.id,
               name: config.name,
@@ -126,9 +133,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
               logo: config.defaultImage,
             });
           }
-        } catch (error) {
-          console.warn(`⚠️ Ошибка при обработке подборки ${config.id}:`, error);
-          // Создаем заглушку в случае ошибки
+        } catch {
           formattedSelections.push({
             _id: config.id,
             name: config.name,
@@ -139,13 +144,9 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
         }
       });
 
-      console.log('🎯 Formatted selections:', formattedSelections);
       setSelections(formattedSelections);
-    } catch (error: any) {
-      console.error('❌ Error fetching selections:', error);
-
-      // Создаем заглушки при ошибке загрузки API
-      const fallbackSelections = SELECTIONS_CONFIG.map((config, index) => ({
+    } catch {
+      const fallbackSelections = SELECTIONS_CONFIG.map((config) => ({
         _id: config.id,
         name: config.name,
         author: 'Музыкальный сервис',
@@ -168,13 +169,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
     logout();
   };
 
-  const handleSelectionClick = (selection: Selection) => {
-    console.log('🎯 Клик по подборке в сайдбаре:', {
-      id: selection._id,
-      name: selection.name,
-      tracksCount: selection.tracks?.length || 0,
-    });
-    // Закрываем меню на мобильных устройствах
+  const handleSelectionClick = () => {
     if (isMobile) {
       setIsVisible(false);
     }
@@ -232,7 +227,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                   <Link
                     className={styles.sidebar__link}
                     href={`/?collection=${selection._id}`}
-                    onClick={() => handleSelectionClick(selection)}
+                    onClick={handleSelectionClick}
                   >
                     <div className={styles.sidebar__imageContainer}>
                       <img
@@ -242,7 +237,6 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                         width={250}
                         height={150}
                         onError={(e) => {
-                          // При ошибке загрузки изображения используем дефолтное
                           const configIndex = SELECTIONS_CONFIG.findIndex(
                             (config) => config.id === selection._id,
                           );
@@ -254,7 +248,6 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
                           }
                         }}
                       />
-                      {/* УДАЛИЛ ЛИШНИЙ БЛОК С НАЗВАНИЕМ ПОДБОРКИ */}
                     </div>
                   </Link>
                 </div>

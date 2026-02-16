@@ -14,29 +14,18 @@ import {
   setFavoriteLoading,
   setFavoriteError,
 } from '@/store/features/trackSlice';
+import { Track } from '@/types/track';
 import styles from './page.module.css';
-
-// Локальный интерфейс для трека
-interface TrackType {
-  _id: number;
-  name: string;
-  author: string;
-  album: string;
-  release_date?: string;
-  genre?: string | string[];
-  duration_in_seconds: number;
-}
 
 export default function FavoritesPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const dispatch = useAppDispatch();
 
-  const { favoriteTracks, isFavoriteLoading, favoriteError } = useAppSelector(
+  const { favoriteTracks, isFavoriteLoading } = useAppSelector(
     (state) => state.tracks,
   );
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -44,138 +33,76 @@ export default function FavoritesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [redirecting, setRedirecting] = useState(false);
 
-  // ДОБАВЛЕНО: Отслеживание состояния аутентификации
-  useEffect(() => {
-    console.log('🔍 FavoritesPage Auth State:', {
-      isAuthenticated,
-      authLoading,
-      user: user?.username || 'null',
-      hasLocalStorageUser: !!localStorage.getItem('user'),
-      hasLocalStorageToken: !!localStorage.getItem('accessToken'),
-      pathname: window.location.pathname,
-    });
-  }, [isAuthenticated, authLoading, user]);
-
-  // ИЗМЕНЕНО: Редирект с задержкой для восстановления состояния
   useEffect(() => {
     if (authLoading) {
-      console.log('⏳ Favorites: Auth еще загружается...');
       return;
     }
 
     if (!isAuthenticated) {
-      console.log(
-        '🚫 Favorites: Пользователь не авторизован, проверяем localStorage...',
-      );
-
-      // Проверяем localStorage напрямую
       const storedUser = localStorage.getItem('user');
       const accessToken = localStorage.getItem('accessToken');
 
       if (storedUser && accessToken) {
-        console.log(
-          '🔄 Favorites: Есть данные в localStorage, ждем восстановления состояния...',
-        );
-        // Даем время AuthContext восстановить состояние
         const timer = setTimeout(() => {
           if (!isAuthenticated && !redirecting) {
-            console.log(
-              '🔀 Favorites: Состояние не восстановилось, делаю редирект',
-            );
             setRedirecting(true);
             router.push('/auth/signin');
           }
-        }, 500); // Увеличил до 500ms
+        }, 500);
 
         return () => clearTimeout(timer);
       } else {
-        // Нет данных в localStorage - сразу редирект
-        console.log('🔀 Favorites: Нет данных в localStorage, сразу редирект');
         setRedirecting(true);
         router.push('/auth/signin');
       }
     } else {
-      console.log('✅ Favorites: Пользователь авторизован:', user?.username);
       setRedirecting(false);
     }
-  }, [isAuthenticated, authLoading, router, user, redirecting]);
+  }, [isAuthenticated, authLoading, router, redirecting]);
 
-  // Загрузка избранных треков
   const loadFavoriteTracks = async (): Promise<void> => {
     if (!isAuthenticated) {
-      console.log('❌ Пользователь не авторизован');
       return;
     }
 
     try {
       dispatch(setFavoriteLoading(true));
       setError(null);
-      setLoading(true);
 
-      console.log('🔄 Загрузка избранных треков...');
-
-      // Импортируем динамически
       const { likeService } = await import('@/app/services/likeService');
       const tracks = await likeService.getFavoriteTracks();
 
-      console.log('✅ Ответ API:', tracks);
-
       if (Array.isArray(tracks)) {
-        console.log(`✅ Загружено треков: ${tracks.length}`);
-
-        // Проверяем данные
-        if (tracks.length > 0) {
-          console.log('🔍 Первый трек:', tracks[0]);
-        }
-
         dispatch(setFavoriteTracks(tracks));
       } else {
-        console.warn('⚠️ API вернул не массив:', tracks);
         dispatch(setFavoriteTracks([]));
       }
-    } catch (error: any) {
-      console.error('❌ Ошибка загрузки избранных треков:', error);
-
+    } catch {
       let errorMessage = 'Не удалось загрузить избранные треки';
-
-      if (error?.response?.status === 401) {
-        errorMessage = 'Требуется авторизация. Пожалуйста, войдите снова.';
-        router.push('/auth/signin');
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
 
       dispatch(setFavoriteError(errorMessage));
       setError(errorMessage);
       dispatch(setFavoriteTracks([]));
     } finally {
       dispatch(setFavoriteLoading(false));
-      setLoading(false);
     }
   };
 
-  // Первоначальная загрузка - ИЗМЕНЕНО условие
   useEffect(() => {
     if (isAuthenticated && !authLoading && !redirecting) {
-      console.log('🎵 Favorites: Загружаю избранные треки');
       loadFavoriteTracks();
-    } else if (!authLoading && !redirecting) {
-      setLoading(false);
     }
   }, [isAuthenticated, authLoading, redirecting]);
 
-  // Обновление плейлиста и фильтрованного плейлиста
   useEffect(() => {
     if (favoriteTracks.length > 0) {
       dispatch(setPlaylist(favoriteTracks));
     }
   }, [favoriteTracks, dispatch]);
 
-  // Поиск + фильтрация треков
   const filteredTracks = useMemo(() => {
     let result = favoriteTracks || [];
 
-    // Поиск по названию, исполнителю, альбому
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -186,7 +113,6 @@ export default function FavoritesPage() {
       );
     }
 
-    // Фильтрация по выбранным фильтрам
     if (
       selectedArtists.length === 0 &&
       selectedGenres.length === 0 &&
@@ -240,7 +166,6 @@ export default function FavoritesPage() {
     dispatch(setFilteredPlaylist(filteredTracks));
   }, [filteredTracks, dispatch]);
 
-  // Обработчики
   const handleArtistToggle = (artist: string) => {
     setSelectedArtists((prev) =>
       prev.includes(artist)
@@ -273,7 +198,6 @@ export default function FavoritesPage() {
     setSearchQuery('');
   };
 
-  // Рендерим loading - ИЗМЕНЕНО
   if (authLoading || redirecting) {
     return (
       <MainLayout pageTitle="Мои треки">
@@ -333,7 +257,6 @@ export default function FavoritesPage() {
     );
   }
 
-  // Если не авторизован, показываем загрузку (редирект уже в процессе)
   if (!isAuthenticated) {
     return (
       <MainLayout pageTitle="Мои треки">
@@ -347,7 +270,6 @@ export default function FavoritesPage() {
     );
   }
 
-  // Центральный блок для MainLayout
   const centerBlockContent = (
     <div className={styles.centerblock}>
       <div className={styles.centerblock__search}>
@@ -443,7 +365,7 @@ export default function FavoritesPage() {
               )}
             </div>
           ) : (
-            filteredTracks.map((track: any, index: number) => (
+            filteredTracks.map((track: Track, index: number) => (
               <div
                 key={track._id || `track-${index}`}
                 className={styles.trackItemWrapper}
@@ -461,6 +383,5 @@ export default function FavoritesPage() {
     </div>
   );
 
-  // Возвращаем полный лэйаут с центроблоком внутри
   return <MainLayout pageTitle="Мои треки">{centerBlockContent}</MainLayout>;
 }

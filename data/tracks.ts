@@ -1,6 +1,5 @@
 import { Track } from '@/types/track';
 
-// Оставляем моковые данные для обратной совместимости
 export const tracks: Track[] = [
   {
     _id: 8,

@@ -16,11 +16,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
 
-  // ДОБАВЬТЕ ЭТОТ useEffect для логирования
-  useEffect(() => {
-    console.log('Navigation: isAuthenticated =', isAuthenticated);
-  }, [isAuthenticated]);
-
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
@@ -91,7 +86,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         <span className={styles.burger__line}></span>
       </div>
 
-      {/* ДЕСКТОПНОЕ МЕНЮ */}
       {!isMobile && (
         <div
           className={`${styles.nav__menu} ${isDesktopMenuOpen ? styles.active : ''}`}
@@ -106,7 +100,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
                 Главное
               </Link>
             </li>
-            {/* ВАЖНО: Проверяем isAuthenticated */}
             {isAuthenticated && (
               <li className={styles.menu__item}>
                 <Link
@@ -152,7 +145,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
         </div>
       )}
 
-      {/* МОБИЛЬНОЕ МЕНЮ */}
       {isMobile && (
         <div
           className={`${styles.nav__mobile_menu} ${isMobileMenuOpen ? styles.active : ''}`}
@@ -168,7 +160,6 @@ export default function Navigation({ onSidebarToggle }: NavigationProps) {
               </Link>
             </li>
 
-            {/* ВАЖНО: Проверяем isAuthenticated */}
             {isAuthenticated && (
               <li className={styles.mobile_menu__item}>
                 <Link

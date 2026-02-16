@@ -1,4 +1,3 @@
-// store/features/trackSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Track } from '@/types/track';
 
@@ -15,11 +14,11 @@ type initialStateType = {
   shuffledPlaylist: Track[];
   filteredPlaylist: Track[];
   useFilteredPlaylist: boolean;
-  // Добавляем состояние для избранного
+
   favoriteTracks: Track[];
   isFavoriteLoading: boolean;
   favoriteError: string | null;
-  // Заменяем Set на массив для сериализации
+
   likedTrackIds: number[];
   trackLikesCount: Record<number, number>;
 };
@@ -37,11 +36,11 @@ const initialState: initialStateType = {
   shuffledPlaylist: [],
   filteredPlaylist: [],
   useFilteredPlaylist: false,
-  // Новые поля
+
   favoriteTracks: [],
   isFavoriteLoading: false,
   favoriteError: null,
-  likedTrackIds: [], // Теперь массив вместо Set
+  likedTrackIds: [],
   trackLikesCount: {},
 };
 
@@ -55,18 +54,15 @@ const trackSlice = createSlice({
       state.isPlaying = true;
       state.currentTime = 0;
 
-      // Определяем активный плейлист
       const activePlaylist = state.useFilteredPlaylist
         ? state.filteredPlaylist
         : state.playlist;
 
-      // Находим индекс трека в активном плейлисте
       const index = activePlaylist.findIndex((t) => t._id === track._id);
 
       if (index !== -1) {
         state.currentTrackIndex = index;
       } else {
-        // Если трека нет в активном плейлисте, добавляем его как единственный
         state.playlist = [track];
         state.filteredPlaylist = [track];
         state.shuffledPlaylist = [track];
@@ -78,9 +74,7 @@ const trackSlice = createSlice({
       const playlist = action.payload;
       state.playlist = playlist;
 
-      // При установке нового плейлиста также создаем перемешанную версию
       if (state.isShuffling) {
-        // Если shuffle включен, перемешиваем
         const shuffled = [...playlist];
         for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -88,11 +82,9 @@ const trackSlice = createSlice({
         }
         state.shuffledPlaylist = shuffled;
       } else {
-        // Если shuffle выключен, просто копируем
         state.shuffledPlaylist = [...playlist];
       }
 
-      // Если есть текущий трек, обновляем его индекс
       if (state.currentTrack) {
         const activePlaylist = state.useFilteredPlaylist
           ? state.filteredPlaylist
@@ -104,7 +96,6 @@ const trackSlice = createSlice({
         if (index !== -1) {
           state.currentTrackIndex = index;
         } else {
-          // Если текущего трека нет в новом плейлисте, сбрасываем
           state.currentTrack = null;
           state.currentTrackIndex = -1;
           state.isPlaying = false;
@@ -116,7 +107,6 @@ const trackSlice = createSlice({
       state.filteredPlaylist = action.payload;
       state.useFilteredPlaylist = action.payload.length > 0;
 
-      // Обновляем shuffledPlaylist для фильтрованного плейлиста
       if (state.isShuffling && state.filteredPlaylist.length > 0) {
         const shuffled = [...state.filteredPlaylist];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -128,7 +118,6 @@ const trackSlice = createSlice({
         state.shuffledPlaylist = [...state.filteredPlaylist];
       }
 
-      // Если есть текущий трек, проверяем есть ли он в фильтрованном плейлисте
       if (state.currentTrack && state.useFilteredPlaylist) {
         const index = state.filteredPlaylist.findIndex(
           (track) => track._id === state.currentTrack?._id,
@@ -136,7 +125,6 @@ const trackSlice = createSlice({
         if (index !== -1) {
           state.currentTrackIndex = index;
         } else if (state.filteredPlaylist.length > 0) {
-          // Если текущего трека нет в фильтрованном, выбираем первый
           state.currentTrack = state.filteredPlaylist[0];
           state.currentTrackIndex = 0;
           state.currentTime = 0;
@@ -147,7 +135,6 @@ const trackSlice = createSlice({
     resetFilteredPlaylist: (state) => {
       state.useFilteredPlaylist = false;
 
-      // Обновляем shuffledPlaylist для основного плейлиста
       if (state.isShuffling && state.playlist.length > 0) {
         const shuffled = [...state.playlist];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -193,7 +180,7 @@ const trackSlice = createSlice({
 
       if (index >= 0 && index < activePlaylist.length) {
         state.currentTrackIndex = index;
-        // В зависимости от режима shuffle выбираем трек из соответствующего плейлиста
+
         state.currentTrack = state.isShuffling
           ? state.shuffledPlaylist[index]
           : activePlaylist[index];
@@ -217,13 +204,11 @@ const trackSlice = createSlice({
       state.isShuffling = !state.isShuffling;
 
       if (!wasShuffling && state.isShuffling) {
-        // ВКЛЮЧЕНИЕ SHUFFLE - перемешиваем треки
         const activePlaylist = state.useFilteredPlaylist
           ? state.filteredPlaylist
           : state.playlist;
 
         if (activePlaylist.length > 0) {
-          // Создаем перемешанную копию
           const shuffled = [...activePlaylist];
           for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -231,7 +216,6 @@ const trackSlice = createSlice({
           }
           state.shuffledPlaylist = shuffled;
 
-          // Обновляем индекс текущего трека в перемешанном плейлисте
           if (state.currentTrack) {
             const index = shuffled.findIndex(
               (track) => track._id === state.currentTrack?._id,
@@ -242,7 +226,6 @@ const trackSlice = createSlice({
           }
         }
       } else if (wasShuffling && !state.isShuffling) {
-        // ВЫКЛЮЧЕНИЕ SHUFFLE - возвращаемся к обычному порядку
         if (state.currentTrack) {
           const activePlaylist = state.useFilteredPlaylist
             ? state.filteredPlaylist
@@ -265,7 +248,6 @@ const trackSlice = createSlice({
           : state.playlist;
 
         if (activePlaylist.length > 0) {
-          // Каждый раз при новом включении перемешиваем заново
           const shuffled = [...activePlaylist];
           for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -273,7 +255,6 @@ const trackSlice = createSlice({
           }
           state.shuffledPlaylist = shuffled;
 
-          // Обновляем индекс текущего трека
           if (state.currentTrack) {
             const index = shuffled.findIndex(
               (track) => track._id === state.currentTrack?._id,
@@ -293,7 +274,6 @@ const trackSlice = createSlice({
 
       if (activePlaylist.length === 0) return;
 
-      // Выбираем плейлист в зависимости от режима shuffle
       const playlist = state.isShuffling
         ? state.shuffledPlaylist
         : activePlaylist;
@@ -301,19 +281,15 @@ const trackSlice = createSlice({
       if (playlist.length > 0) {
         let nextIndex = state.currentTrackIndex + 1;
 
-        // Проверяем, достигли ли конца плейлиста
         if (nextIndex >= playlist.length) {
           if (state.isLooping) {
-            // Если включен loop - начинаем сначала
             nextIndex = 0;
           } else {
-            // Если loop выключен - останавливаем воспроизведение
             state.isPlaying = false;
             return;
           }
         }
 
-        // Обновляем текущий трек
         state.currentTrackIndex = nextIndex;
         state.currentTrack = playlist[nextIndex];
         state.currentTime = 0;
@@ -328,7 +304,6 @@ const trackSlice = createSlice({
 
       if (activePlaylist.length === 0) return;
 
-      // Выбираем плейлист в зависимости от режима shuffle
       const playlist = state.isShuffling
         ? state.shuffledPlaylist
         : activePlaylist;
@@ -336,19 +311,15 @@ const trackSlice = createSlice({
       if (playlist.length > 0) {
         let prevIndex = state.currentTrackIndex - 1;
 
-        // Проверяем, достигли ли начала плейлиста
         if (prevIndex < 0) {
           if (state.isLooping) {
-            // Если включен loop - переходим к последнему треку
             prevIndex = playlist.length - 1;
           } else {
-            // Если loop выключен - останавливаем воспроизведение
             state.isPlaying = false;
             return;
           }
         }
 
-        // Обновляем текущий трек
         state.currentTrackIndex = prevIndex;
         state.currentTrack = playlist[prevIndex];
         state.currentTime = 0;
@@ -368,15 +339,10 @@ const trackSlice = createSlice({
       state.currentTrackIndex = -1;
     },
 
-    // НОВЫЕ РЕДУКТОРЫ ДЛЯ ЛАЙКОВ
-
-    // Загрузка избранных треков
     setFavoriteTracks: (state, action: PayloadAction<Track[]>) => {
       state.favoriteTracks = action.payload;
 
-      // Обновляем likedTrackIds и trackLikesCount
       action.payload.forEach((track) => {
-        // Добавляем ID трека в массив, если его там нет
         if (!state.likedTrackIds.includes(track._id)) {
           state.likedTrackIds.push(track._id);
         }
@@ -384,21 +350,16 @@ const trackSlice = createSlice({
       });
     },
 
-    // Установка состояния загрузки избранного
     setFavoriteLoading: (state, action: PayloadAction<boolean>) => {
       state.isFavoriteLoading = action.payload;
     },
-
-    // Установка ошибки избранного
     setFavoriteError: (state, action: PayloadAction<string | null>) => {
       state.favoriteError = action.payload;
     },
 
-    // Добавление трека в избранное
     addToFavorites: (state, action: PayloadAction<Track>) => {
       const track = action.payload;
 
-      // Добавляем трек в массив избранных, если его там нет
       if (!state.favoriteTracks.some((t) => t._id === track._id)) {
         state.favoriteTracks.push({
           ...track,
@@ -407,16 +368,13 @@ const trackSlice = createSlice({
         });
       }
 
-      // Добавляем ID трека в массив, если его там нет
       if (!state.likedTrackIds.includes(track._id)) {
         state.likedTrackIds.push(track._id);
       }
 
-      // Обновляем счетчик лайков
       state.trackLikesCount[track._id] =
         (state.trackLikesCount[track._id] || 0) + 1;
 
-      // Обновляем текущий трек, если это он
       if (state.currentTrack && state.currentTrack._id === track._id) {
         state.currentTrack = {
           ...state.currentTrack,
@@ -425,7 +383,6 @@ const trackSlice = createSlice({
         };
       }
 
-      // Обновляем треки в плейлистах
       state.playlist = state.playlist.map((t) =>
         t._id === track._id
           ? { ...t, is_liked: true, likes_count: (t.likes_count || 0) + 1 }
@@ -445,23 +402,18 @@ const trackSlice = createSlice({
       );
     },
 
-    // Удаление трека из избранного
     removeFromFavorites: (state, action: PayloadAction<number>) => {
       const trackId = action.payload;
 
-      // Удаляем трек из массива избранных
       state.favoriteTracks = state.favoriteTracks.filter(
         (track) => track._id !== trackId,
       );
 
-      // Удаляем ID трека из массива
       state.likedTrackIds = state.likedTrackIds.filter((id) => id !== trackId);
 
-      // Обновляем счетчик лайков
       const currentCount = state.trackLikesCount[trackId] || 0;
       state.trackLikesCount[trackId] = Math.max(0, currentCount - 1);
 
-      // Обновляем текущий трек, если это он
       if (state.currentTrack && state.currentTrack._id === trackId) {
         state.currentTrack = {
           ...state.currentTrack,
@@ -470,7 +422,6 @@ const trackSlice = createSlice({
         };
       }
 
-      // Обновляем треки в плейлистах
       state.playlist = state.playlist.map((t) =>
         t._id === trackId
           ? {
@@ -502,7 +453,6 @@ const trackSlice = createSlice({
       );
     },
 
-    // Тоггл лайка (общий метод)
     toggleLike: (
       state,
       action: PayloadAction<{ trackId: number; isLiked: boolean }>,
@@ -510,7 +460,6 @@ const trackSlice = createSlice({
       const { trackId, isLiked } = action.payload;
 
       if (isLiked) {
-        // Находим трек для добавления
         const trackToAdd = [
           ...state.playlist,
           ...state.filteredPlaylist,
@@ -519,14 +468,12 @@ const trackSlice = createSlice({
         ].find((t) => t && t._id === trackId);
 
         if (trackToAdd) {
-          // Используем существующий редуктор для добавления
           trackSlice.caseReducers.addToFavorites(state, {
             type: 'tracks/addToFavorites',
             payload: trackToAdd,
           });
         }
       } else {
-        // Используем существующий редуктор для удаления
         trackSlice.caseReducers.removeFromFavorites(state, {
           type: 'tracks/removeFromFavorites',
           payload: trackId,
@@ -534,7 +481,6 @@ const trackSlice = createSlice({
       }
     },
 
-    // Обновление счетчика лайков для трека
     updateTrackLikes: (
       state,
       action: PayloadAction<{
@@ -548,18 +494,15 @@ const trackSlice = createSlice({
       state.trackLikesCount[trackId] = likesCount;
 
       if (isLiked) {
-        // Добавляем ID если его нет
         if (!state.likedTrackIds.includes(trackId)) {
           state.likedTrackIds.push(trackId);
         }
       } else {
-        // Удаляем ID если есть
         state.likedTrackIds = state.likedTrackIds.filter(
           (id) => id !== trackId,
         );
       }
 
-      // Обновляем текущий трек
       if (state.currentTrack && state.currentTrack._id === trackId) {
         state.currentTrack = {
           ...state.currentTrack,
@@ -568,7 +511,6 @@ const trackSlice = createSlice({
         };
       }
 
-      // Обновляем треки в плейлистах
       const updateTrackInArray = (track: Track) =>
         track._id === trackId
           ? { ...track, is_liked: isLiked, likes_count: likesCount }
@@ -580,7 +522,6 @@ const trackSlice = createSlice({
       state.favoriteTracks = state.favoriteTracks.map(updateTrackInArray);
     },
 
-    // Очистка состояния избранного при выходе
     clearFavorites: (state) => {
       state.favoriteTracks = [];
       state.likedTrackIds = [];
@@ -609,7 +550,7 @@ export const {
   prevTrack,
   setProgress,
   clearTrack,
-  // Новые экшены
+
   setFavoriteTracks,
   setFavoriteLoading,
   setFavoriteError,

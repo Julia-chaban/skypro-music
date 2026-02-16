@@ -1,4 +1,3 @@
-// app/components/Filter/Filter.tsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -50,9 +49,7 @@ export default function Filter({
             const year = date.getFullYear().toString();
             years.add(year);
           }
-        } catch (error) {
-          // Игнорируем ошибки парсинга даты
-        }
+        } catch {}
       }
     });
     return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));

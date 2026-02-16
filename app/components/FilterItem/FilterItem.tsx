@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import classNames from 'classnames';
 import styles from './FilterItem.module.css';
 
 interface FilterItemProps {
@@ -47,10 +46,9 @@ export default function FilterItem({
     };
   }, [isActive, onClick]);
 
-  const buttonClassNames = classNames(styles.filter__button, styles.btnText, {
-    [styles.active]: isActive,
-    [styles.withSelection]: selectedCount > 0,
-  });
+  const buttonClassNames = `${styles.filter__button} ${styles.btnText} ${
+    isActive ? styles.active : ''
+  } ${selectedCount > 0 ? styles.withSelection : ''}`;
 
   return (
     <div className={styles.filterItemContainer}>

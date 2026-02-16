@@ -55,14 +55,12 @@ export interface FilterOptions {
   year: string[];
 }
 
-// 1. Интерфейс для ответа API
 export interface ApiResponse<T> {
   data?: T;
   message?: string;
   success?: boolean;
 }
 
-// 2. Интерфейс для параметров фильтрации
 export interface FilterParams {
   author?: string;
   genre?: string;
@@ -70,14 +68,12 @@ export interface FilterParams {
   search?: string;
 }
 
-// 3. Интерфейс для избранных треков
 export interface FavoriteTrack {
   track_id: number;
   user_id: number;
   added_at: string;
 }
 
-// 4. Дополнительные интерфейсы для пагинации
 export interface PaginatedResponse<T> {
   results: T[];
   count: number;
@@ -85,7 +81,6 @@ export interface PaginatedResponse<T> {
   previous: string | null;
 }
 
-// 5. Интерфейс для воспроизведения трека
 export interface PlaybackState {
   isPlaying: boolean;
   currentTime: number;

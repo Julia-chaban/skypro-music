@@ -66,12 +66,11 @@
     min-width: 280px;
     max-width: 320px;
     max-height: 305px;
-    /* Высота попапа */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
     max-width: min(320px, 90vw);
     overflow: hidden;
-    /* Важно для скролла */
+
 }
 
 @keyframes fadeIn {
@@ -98,7 +97,7 @@
     cursor: pointer;
 }
 
-/* Стили для кнопки с выбранными элементами */
+
 .filter__button.withSelection {
     border-color: #ad61ff;
     color: #ad61ff;

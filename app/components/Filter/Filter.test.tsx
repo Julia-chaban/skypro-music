@@ -4,7 +4,6 @@ import '@testing-library/jest-dom';
 import Filter from './Filter';
 import { Track } from '@/types/track';
 
-// Простые моки
 jest.mock('../FilterItem/FilterItem', () => {
   return function MockFilterItem({ label }: any) {
     return <div data-testid={`filter-${label}`}>{label}</div>;

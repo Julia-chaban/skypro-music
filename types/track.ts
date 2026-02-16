@@ -1,8 +1,3 @@
-// types/track.ts
-
-// ==================== ОСНОВНЫЕ ИНТЕРФЕЙСЫ ====================
-
-// Базовый интерфейс для трека
 export interface Track {
   _id: number;
   name: string;
@@ -14,12 +9,10 @@ export interface Track {
   logo: string | null;
   track_file: string;
   stared_user: number[];
-  // Дополнительные поля для UI
   likes_count?: number;
   is_liked?: boolean;
 }
 
-// Интерфейс для подборки/плейлиста
 export interface Selection {
   _id: number;
   name: string;
@@ -28,12 +21,8 @@ export interface Selection {
   logo: string | null;
 }
 
-// ЯВНАЯ ТИПИЗАЦИЯ ДЛЯ RESPONSE API ПОДБОРОК
 export interface SelectionResponse extends Selection {}
 
-// ==================== ОТВЕТЫ API ====================
-
-// Ответ для списка подборок
 export interface SelectionsListResponse {
   data?: Selection[];
   selections?: Selection[];
@@ -46,7 +35,6 @@ export interface SelectionsListResponse {
   message?: string;
 }
 
-// Ответ для списка треков
 export interface TracksListResponse {
   data?: Track[];
   tracks?: Track[];
@@ -57,7 +45,6 @@ export interface TracksListResponse {
   message?: string;
 }
 
-// Общий ответ API
 export interface ApiResponse<T> {
   data?: T;
   message?: string;
@@ -65,7 +52,6 @@ export interface ApiResponse<T> {
   detail?: string;
 }
 
-// Ответ для пагинации
 export interface PaginatedResponse<T> {
   results: T[];
   count: number;
@@ -73,9 +59,6 @@ export interface PaginatedResponse<T> {
   previous: string | null;
 }
 
-// ==================== ИЗБРАННОЕ И ЛАЙКИ ====================
-
-// Ответ на лайк/дислайк
 export interface LikeResponse {
   success: boolean;
   message?: string;
@@ -84,7 +67,6 @@ export interface LikeResponse {
   detail?: string;
 }
 
-// Ответ для избранных треков пользователя
 export interface FavoriteTracksResponse {
   tracks: Track[];
   count: number;
@@ -92,34 +74,27 @@ export interface FavoriteTracksResponse {
   message?: string;
 }
 
-// Обновленный трек с лайками
 export interface UpdatedTrackResponse {
   track: Track;
   likes_count: number;
   is_liked: boolean;
 }
 
-// Запись избранного трека
 export interface FavoriteTrack {
   track_id: number;
   user_id: number;
   added_at: string;
 }
 
-// ==================== API ФОРМАТЫ ====================
-
-// ВАЖНО: Интерфейс для ответа /catalog/track/favorite/all/
-// API возвращает массив подборок с ID треков, а не сами треки
 export interface FavoritePlaylistsResponse {
   id: number;
   name: string;
-  items: number[]; // Массив ID треков
+  items: number[];
   owner: number[];
   v?: number;
-  _id?: number; // Иногда может быть _id вместо id
+  _id?: number;
 }
 
-// Ответ для одного трека по ID
 export interface TrackResponse {
   _id: number;
   name: string;
@@ -134,16 +109,12 @@ export interface TrackResponse {
   likes_count?: number;
 }
 
-// ==================== ФИЛЬТРЫ И ПОИСК ====================
-
-// Опции фильтрации
 export interface FilterOptions {
   author: string[];
   genre: string[];
   year: string[];
 }
 
-// Параметры фильтрации
 export interface FilterParams {
   author?: string;
   genre?: string;
@@ -153,9 +124,6 @@ export interface FilterParams {
   offset?: number;
 }
 
-// ==================== ВОСПРОИЗВЕДЕНИЕ ====================
-
-// Состояние воспроизведения
 export interface PlaybackState {
   isPlaying: boolean;
   currentTime: number;
@@ -163,9 +131,6 @@ export interface PlaybackState {
   volume: number;
 }
 
-// ==================== ДЛЯ REDUX STORE ====================
-
-// Состояние треков в Redux
 export interface TrackState {
   tracks: Track[];
   favoriteTracks: Track[];
@@ -187,16 +152,12 @@ export interface TrackState {
   favoriteError: string | null;
 }
 
-// Обновление лайков
 export interface TrackLikeUpdate {
   trackId: number;
   likesCount: number;
   isLiked: boolean;
 }
 
-// ==================== МЕТАДАННЫЕ ====================
-
-// Метаданные трека
 export interface TrackMetadata {
   bitrate?: number;
   samplerate?: number;
@@ -205,7 +166,6 @@ export interface TrackMetadata {
   size?: number;
 }
 
-// История прослушивания
 export interface ListeningHistory {
   track_id: number;
   listened_at: string;
@@ -213,18 +173,12 @@ export interface ListeningHistory {
   user_id: number;
 }
 
-// ==================== АВТОРИЗАЦИЯ ====================
-
-// Экспортируем интерфейсы для auth
 export interface UserTrackStats {
   total_listened: number;
   favorite_tracks_count: number;
   favorite_genres: string[];
 }
 
-// ==================== ДОПОЛНИТЕЛЬНО ====================
-
-// Для отладки и логирования
 export interface DebugTrackInfo {
   trackId: number;
   trackName: string;
@@ -233,7 +187,6 @@ export interface DebugTrackInfo {
   inFavorites: boolean;
 }
 
-// Типы для обработки ошибок
 export interface ApiErrorData {
   status?: number;
   message: string;
@@ -241,10 +194,7 @@ export interface ApiErrorData {
   code?: string;
   timestamp?: string;
 }
-
-// Экспорт всех типов
 export type {
-  // Реэкспортируем для удобства
   Track as ITrack,
   Selection as ISelection,
   FilterParams as IFilterParams,
