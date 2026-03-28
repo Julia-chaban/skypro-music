@@ -10,6 +10,7 @@ interface FilterItemProps {
   isActive: boolean;
   onClick: () => void;
   popupContent?: React.ReactNode;
+  selectedCount?: number;
 }
 
 export default function FilterItem({
@@ -17,10 +18,10 @@ export default function FilterItem({
   isActive,
   onClick,
   popupContent,
+  selectedCount = 0,
 }: FilterItemProps) {
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Закрытие попапа при клике вне его области
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -46,17 +47,20 @@ export default function FilterItem({
     };
   }, [isActive, onClick]);
 
+  const buttonClassNames = classNames(styles.filter__button, styles.btnText, {
+    [styles.active]: isActive,
+    [styles.withSelection]: selectedCount > 0,
+  });
+
   return (
     <div className={styles.filterItemContainer}>
       <button
-        className={classNames(styles.filter__button, styles.btnText, {
-          [styles.active]: isActive,
-        })}
+        className={buttonClassNames}
         onClick={onClick}
         aria-expanded={isActive}
         aria-haspopup="true"
       >
-        {label}
+        {label} {selectedCount > 0 && `(${selectedCount})`}
       </button>
       {isActive && popupContent && (
         <div
