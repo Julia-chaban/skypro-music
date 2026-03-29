@@ -1,0 +1,106 @@
+.styledProgressInput {
+    --progress-height: 5px;
+    --progress-color: #b672ff;
+    --progress-bg-color: #2e2e2e;
+
+    margin: 0;
+    width: 100%;
+    height: var(--progress-height);
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+    transition: 0.2s;
+}
+
+.styledProgressInput:hover {
+    --progress-height: 8px;
+}
+
+.styledProgressInput::-webkit-slider-runnable-track {
+    position: relative;
+    height: var(--progress-height);
+    background: var(--progress-bg-color);
+}
+
+.styledProgressInput::-webkit-slider-thumb {
+    --thumb-height: 1px;
+    --thumb-width: 1px;
+    position: relative;
+    -webkit-appearance: none;
+    width: var(--thumb-width, var(--thumb-height));
+    box-shadow: calc(-100vmax - var(--thumb-width, var(--thumb-height))) 0 0 100vmax var(--progress-color);
+}
+
+.styledProgressInput::-webkit-slider-runnable-track {
+    background: var(--progress-bg-color);
+}
+
+/* FF */
+.styledProgressInput::-moz-range-track {
+    width: 100%;
+    height: var(--progress-height);
+    background: var(--progress-bg-color);
+    border: none;
+    border-radius: 0px;
+}
+
+.styledProgressInput::-moz-range-thumb {
+    border: none;
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.styledProgressInput::-moz-range-progress {
+    background-color: var(--progress-color);
+    height: var(--progress-height);
+}
+
+/* Адаптив для мобильных устройств */
+
+/* Для экранов до 768px */
+@media (max-width: 768px) {
+    .styledProgressInput {
+        --progress-height: 4px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 6px;
+    }
+}
+
+/* Для маленьких экранов (425px) */
+@media (max-width: 425px) {
+    .styledProgressInput {
+        --progress-height: 3px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 5px;
+    }
+
+    .styledProgressInput::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+    }
+}
+
+/* Для очень маленьких экранов (375px) */
+@media (max-width: 375px) {
+    .styledProgressInput {
+        --progress-height: 2px;
+    }
+
+    .styledProgressInput:hover {
+        --progress-height: 4px;
+    }
+
+    .styledProgressInput::-moz-range-thumb {
+        height: 18px;
+        width: 18px;
+    }
+}
