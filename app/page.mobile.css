@@ -33,7 +33,7 @@
     .centerblock {
         width: 100%;
         max-width: 100vw;
-        padding: 15px 0;
+        padding: 20px 20px 20px 90px;
         order: 2;
         overflow-x: hidden;
         box-sizing: border-box;
@@ -58,6 +58,40 @@
         box-sizing: border-box;
         background-color: #181818;
     }
+
+    /* Стили для страницы подборок на мобильных */
+    .collectionsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 0 15px;
+    }
+
+    .collectionTitle {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .collectionHeader {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0 15px 20px 15px;
+    }
+
+    .collectionLogo {
+        width: 120px;
+        height: 120px;
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .collectionImage {
+        height: 150px;
+    }
+
+    .collectionInfo {
+        padding: 15px;
+    }
 }
 
 /* Для очень маленьких экранов */
@@ -77,6 +111,26 @@
     .bar {
         padding: 0 10px;
     }
+
+    .collectionsGrid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 0 10px;
+    }
+
+    .collectionImage {
+        height: 140px;
+    }
+
+    .collectionTitle {
+        font-size: 24px;
+        line-height: 32px;
+    }
+
+    .collectionLogo {
+        width: 100px;
+        height: 100px;
+    }
 }
 
 /* Для экстремально маленьких экранов */
@@ -87,5 +141,18 @@
 
     .bar {
         padding: 0 8px;
+    }
+
+    .collectionsGrid {
+        padding: 0 8px;
+        gap: 12px;
+    }
+
+    .collectionImage {
+        height: 130px;
+    }
+
+    .collectionInfo {
+        padding: 12px;
     }
 }

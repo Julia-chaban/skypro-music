@@ -1,3 +1,4 @@
+// types/track.ts
 export interface Track {
   _id: number;
   name: string;
@@ -8,5 +9,104 @@ export interface Track {
   album: string;
   logo: string | null;
   track_file: string;
-  stared_user: any[];
+  stared_user: number[];
+  // Добавляем поля для лайков
+  likes_count?: number;
+  is_liked?: boolean;
+}
+
+// Интерфейс для подборки/селекции
+export interface Selection {
+  _id: number;
+  name: string;
+  author: string;
+  tracks: Track[];
+  logo: string | null;
+}
+
+// ЯВНАЯ ТИПИЗАЦИЯ ДЛЯ RESPONSE API ПОДБОРОК
+export interface SelectionResponse extends Selection {}
+
+export interface SelectionsListResponse {
+  data?: Selection[];
+  selections?: Selection[];
+  results?: Selection[];
+  items?: Selection[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export interface TracksListResponse {
+  data?: Track[];
+  tracks?: Track[];
+  results?: Track[];
+  items?: Track[];
+  count?: number;
+}
+
+// Интерфейс для опций фильтрации
+export interface FilterOptions {
+  author: string[];
+  genre: string[];
+  year: string[];
+}
+
+// 1. Интерфейс для ответа API
+export interface ApiResponse<T> {
+  data?: T;
+  message?: string;
+  success?: boolean;
+}
+
+// 2. Интерфейс для параметров фильтрации
+export interface FilterParams {
+  author?: string;
+  genre?: string;
+  year?: string;
+  search?: string;
+}
+
+// 3. Интерфейс для избранных треков
+export interface FavoriteTrack {
+  track_id: number;
+  user_id: number;
+  added_at: string;
+}
+
+// 4. Дополнительные интерфейсы для пагинации
+export interface PaginatedResponse<T> {
+  results: T[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
+// 5. Интерфейс для состояния воспроизведения трека
+export interface PlaybackState {
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+}
+
+// 6. Новые интерфейсы для лайков
+export interface LikeResponse {
+  success: boolean;
+  message?: string;
+  track_id: number;
+  likes_count: number;
+}
+
+// 7. Интерфейс для избранных треков пользователя
+export interface FavoriteTracksResponse {
+  tracks: Track[];
+  count: number;
+}
+
+// 8. Интерфейс для обновленного трека с лайками
+export interface UpdatedTrackResponse {
+  track: Track;
+  likes_count: number;
+  is_liked: boolean;
 }
