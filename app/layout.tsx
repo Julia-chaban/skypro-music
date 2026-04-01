@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
+import ReduxProvider from '@/store/ReduxProvider';
+import { AuthProvider } from '@/app/context/AuthContext';
 
 const montserrat = Montserrat({
+  subsets: ['cyrillic', 'latin'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-montserrat',
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
-  title: 'Skypro Music',
-  description: 'Музыкальное приложение',
+  title: 'Музыкальный сервис',
+  description: 'Слушайте музыку онлайн',
 };
 
 export default function RootLayout({
@@ -20,7 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${montserrat.variable}`}>{children}</body>
+      <body className={montserrat.className}>
+        <ReduxProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ReduxProvider>
+      </body>
     </html>
   );
 }

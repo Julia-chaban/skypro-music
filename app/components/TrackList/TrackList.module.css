@@ -1,0 +1,96 @@
+.trackList {
+    width: 100%;
+    padding: 20px;
+    background: #121212;
+    border-radius: 8px;
+}
+
+.trackListHeader {
+    display: flex;
+    padding: 0 20px 10px 20px;
+    border-bottom: 1px solid #464646;
+    margin-bottom: 10px;
+    color: #696969;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.headerNumber {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.headerTitle {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.headerAlbum {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.headerDuration {
+    width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.durationIcon {
+    width: 12px;
+    height: 12px;
+    fill: #696969;
+}
+
+.trackListContent {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+}
+
+.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #ff4d4d;
+    font-size: 16px;
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #696969;
+    font-size: 16px;
+}
+
+/* Стили для скроллбара */
+.trackListContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+.trackListContent::-webkit-scrollbar-track {
+    background: #2e2e2e;
+    border-radius: 4px;
+}
+
+.trackListContent::-webkit-scrollbar-thumb {
+    background: #696969;
+    border-radius: 4px;
+}
+
+.trackListContent::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
